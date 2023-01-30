@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AiFillInfoCircle } from 'react-icons/ai';
+import { Tooltip } from 'react-tooltip';
 
 
 export default function VacationPlanResults ({ plan }) {
@@ -12,9 +14,22 @@ export default function VacationPlanResults ({ plan }) {
     // logic to download the document
   }
 
+  const handlePlanTextChange = (e) => {
+    setPlanText(e.target.value);
+    localStorage.setItem(e.target.value);
+  }
+
   const startOver = () => {
+    localStorage.clear();
     navigate('/planVacation');
   }
+
+  useEffect(() => {
+    const savedPlan = localStorage.getItem('plan');
+    if (savedPlan) {
+      setPlanText(savedPlan);
+    }
+  }, [])
 
   return (
     <div>
@@ -23,7 +38,7 @@ export default function VacationPlanResults ({ plan }) {
         rows="10"
         cols="40"
         value={planText}
-        onChange={e => setPlanText(e.target.value)}
+        onChange={e => handlePlanTextChange(e)}
         readOnly={!isEditable}
       />
       <br />

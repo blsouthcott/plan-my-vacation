@@ -1,4 +1,5 @@
 import './App.css';
+import 'react-tooltip/dist/react-tooltip.css'
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import WelcomePage from './components/welcomePage';
