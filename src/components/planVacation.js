@@ -59,6 +59,8 @@ const vacationLocationText = 'We can provide recommendations specific to cities 
 const numTravellersText = 'Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!'
 const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or to see more recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
 const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
+const startOverTooltipText = 'If you choose to Start Over, all the information you\'ve entered so far will be lost, including your recommendations and selections.'
+
 
 export default function VacationForm ({ setPlan }) {
   const navigate = useNavigate();
@@ -116,8 +118,12 @@ export default function VacationForm ({ setPlan }) {
     setIsLoading(true);
     setDisplayRecs(true);
     localStorage.setItem('displayRecs', true);
-    // make call to backend here using vacationLocation and numTravellers
-    // await fetch() etc.
+
+    // here's where we'll make the call to the backend using the fetch API
+    // no changes to the existing code base will be necessary because we can take
+    // the data received from the API and format it similar to the way the mock data is formatted,
+    // then call `setThingsToDoRecs` and `setRestaurantRecs` as below using that data
+
     setThingsToDoRecs(mockThingsToDoData);
     setRestaurantRecs(mockRestaurantsData);
 
@@ -171,6 +177,16 @@ export default function VacationForm ({ setPlan }) {
       setIsLoading(false);
       navigate('/vacationPlanResults');
     }, 1500);
+  }
+
+  const startOver = (e) => {
+    e.preventDefault();
+    localStorage.clear();
+    setDisplayRecs(false);
+    setVacationLocation('');
+    setNumTravellers('');
+    setThingsToDoRecs([]);
+    setRestaurantRecs([]);
   }
 
   useEffect(() => {
@@ -253,12 +269,16 @@ export default function VacationForm ({ setPlan }) {
           <br />
           <br />
 
+          {!displayRecs &&
+          <>
           <button type='submit'>
             Get Recommendations!
           </button>
+          <br />
+          <br />
+          </>}
 
-          <br />
-          <br />
+          
 
         </form>
 
@@ -279,7 +299,6 @@ export default function VacationForm ({ setPlan }) {
               />
             </h3>
             {thingsToDoRecs.map((thing, i) => {
-              {console.log(i, thing)}
               return (
                 <>
                   <label>
@@ -337,10 +356,25 @@ export default function VacationForm ({ setPlan }) {
           <button onClick={getMoreRestaurantRecs}>
             Get more recommendations!
           </button>
+          
 
           <br />
           <br />
           <input type="submit" value='Get Vacation Plan!'/>
+          &nbsp;
+          <button onClick={startOver}>
+            Start Over
+          </button>
+          &nbsp;
+          <AiFillInfoCircle id='start-over-tooltip' />
+          <Tooltip
+          style={tooltipStyle}
+          html={startOverTooltipText}
+          anchorId='start-over-tooltip' 
+          place='right'
+          delayShow='300'
+          delayHide='100' 
+          />
 
         </form>
         }

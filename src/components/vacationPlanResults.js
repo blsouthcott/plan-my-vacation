@@ -8,6 +8,8 @@ export default function VacationPlanResults ({ plan }) {
 
   const [planText, setPlanText] = useState(plan);
   const [isEditable, setIsEditable] = useState(false);
+  const [savePlanOpt, setSavePlanOpt] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
 
   const handleDownload = () => {
@@ -25,10 +27,15 @@ export default function VacationPlanResults ({ plan }) {
   }
 
   useEffect(() => {
-    const savedPlan = localStorage.getItem('plan');
-    if (savedPlan) {
-      setPlanText(savedPlan);
-    }
+    if (plan) {
+      setPlanText(plan);
+      localStorage.setItem('plan', plan)
+    } else {
+      const savedPlan = localStorage.getItem('plan');
+      if (savedPlan) {
+        setPlanText(savedPlan);
+      };
+    };
   }, [])
 
   return (
@@ -43,14 +50,45 @@ export default function VacationPlanResults ({ plan }) {
       />
       <br />
       {isEditable ?
-        <button onClick={() => setIsEditable(false)}>Save</button>
+        <button onClick={() => setIsEditable(false)}>Save Plan</button>
       :
-        <button onClick={() => setIsEditable(true)}>Edit</button>
+        <button onClick={() => setIsEditable(true)}>Edit Plan</button>
       }
       <br />
       <br />
-      <button onClick={handleDownload}>Download</button>
+      <label>
+      <input
+      type='radio'
+      value='download-pdf'
+      checked={savePlanOpt === 'download-pdf' ? true : false}
+      onChange={() => setSavePlanOpt('download-pdf')}
+      />
+      Download as PDF
+      </label>
       <br />
+      <label>
+      <input
+      type='radio'
+      value='send-to-email'
+      checked={savePlanOpt === 'send-to-email' ? true : false}
+      onChange={() => setSavePlanOpt('send-to-email')}
+      />
+      Send Plan to email
+      </label>
+      {savePlanOpt === 'send-to-email' &&
+      <>
+      <br />
+      <input
+      type='text'
+      placeholder='Enter your email...'
+      value={userEmail}
+      onChange={e => setUserEmail(e.target.value)}
+      />
+      </>}
+      <br />
+      <button onClick={handleDownload}>Save Plan</button>
+      &nbsp;
+      &nbsp;
       <button onClick={startOver}>Start Over</button>
     </div>
   )

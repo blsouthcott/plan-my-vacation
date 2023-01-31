@@ -11,8 +11,9 @@ export default function About () {
       <h1>About Plan Your Vacation</h1>
       <p>Plan Your Vacation is an <strong>AI Assisted</strong><AiFillInfoCircle id='ai-tooltip' data-tooltip-content={tooltipText} /> tool where you can plan your dream vacation!</p> 
       <p>All you have to do is tell us where you're going and how many people you're travelling with!</p> 
-      <p>Then choose from a list of things to do and places to eat and we will craft a plan tailored to you!</p>
-      <p>To get started, click <Link to="/planVacation">here</Link>!</p>
+      <p>Based on the information you provide, we'll give you recommendations of things to do and places to eat -- then craft a vacation plan tailored to you based on your choices!</p>
+      <p>To see an example, click <Link to="/examplePlan" target="_blank">here</Link>!</p>
+      <p>Or to get started, click <Link to="/planVacation">here</Link>!</p>
       <Tooltip 
       style={tooltipStyle}
       anchorId='ai-tooltip' 
