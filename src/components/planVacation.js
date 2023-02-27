@@ -6,54 +6,7 @@ import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
 
 const recsURL = "http://localhost:5000/getRecommendations";
-
-const mockThingsToDoData = [
-  {
-    key: 1, 
-    text: 'Walk around Central Park',
-    checked: false
-  },
-  {
-    key: 2,
-    text: 'Go to the Empire State Building',
-    checked: false
-  },
-  {
-    key: 3,
-    text: 'Go to Smalls Jazz Club',
-    checked: false
-  }
-]
-
-const mockMoreThingsToDoData = [
-  'Go to Times Square',
-  'Go to Coney Island',
-  'Go to 9/11 Memorial'
-]
-
-const mockRestaurantsData = [
-  {
-    key: 1,
-    text: 'Katz\'s Delicatessen',
-    checked: false
-  },
-  {
-    key: 2,
-    text: 'Keens Steakhouse',
-    checked: false
-  },
-  {
-    key: 3,
-    text: 'The Russian Tea Room',
-    checked: false
-  }
-]
-
-const mockMoreRestaurantsData = [
-  'Boucherie Union Square',
-  'COTE Korean Steakhouse',
-  'Le Coucou'
-]
+const planURL = "http://localhost:5000/getPlan"
 
 // tooltip text
 const vacationLocationText = 'We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!'
@@ -88,6 +41,7 @@ export default function VacationForm ({ setPlan }) {
 
   const [vacationLocation, setVacationLocation] = useState('');
   const [numTravellers, setNumTravellers] = useState('');
+  const [numDays, setNumDays] = useState('');
   const [thingsToDoRecs, setThingsToDoRecs] = useState([]);
   const [restaurantRecs, setRestaurantRecs] = useState([]);
 
@@ -96,6 +50,11 @@ export default function VacationForm ({ setPlan }) {
   const handleNumTravellersChange = async (e) => {
     e.target.value >= 1 && setNumTravellers(e.target.value);
     e.target.value >= 1 && localStorage.setItem('numTravellers', e.target.value);
+  }
+
+  const handleNumDaysChange = async (e) => {
+    e.target.value >= 1 && setNumDays(e.target.value);
+    e.target.value >= 1 && localStorage.setItem('numDays', e.target.value);
   }
 
   const handleVacationLocationChange = async (e) => {
@@ -138,11 +97,7 @@ export default function VacationForm ({ setPlan }) {
     setDisplayRecs(true);
     localStorage.setItem('displayRecs', true);
 
-    // here's where we'll make the call to the backend using the fetch API
-    // no changes to the existing code base will be necessary because we can take
-    // the data received from the API and format it similar to the way the mock data is formatted,
-    // then call `setThingsToDoRecs` and `setRestaurantRecs` as below using that data
-
+    // make the call to the OpenAI microservice here to get the recommendations
     const [thingsToDoResp, restaurantsResp] = await Promise.all([
       fetch(recsURL, {
         method: "POST",
@@ -257,17 +212,33 @@ export default function VacationForm ({ setPlan }) {
     }
   }
   
-  const getVacationPlan = (e) => {
+  const getVacationPlan = async (e) => {
     // make call to backend 
     e.preventDefault();
     setIsLoading(true);
     const selectedThingsToDo = thingsToDoRecs.filter(item => item.checked === true).map(item => item.text);
     const selectedRestaurants = restaurantRecs.filter(item => item.checked === true).map(item => item.text);
-    setTimeout(() => {
-      setPlan(JSON.stringify(selectedThingsToDo) + JSON.stringify(selectedRestaurants));
-      setIsLoading(false);
+    const resp = await fetch(planURL, {
+      method: "POST",
+      body: JSON.stringify({
+        thingsToDo: selectedThingsToDo,
+        restaurants: selectedRestaurants,
+        numDays: numDays
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+    if (resp.status === 200) {
+      const respData = await resp.json();
+      const plan = respData.vacationPlan;
+      console.log("plan: ", plan)
+      setPlan(plan);
       navigate('/vacationPlanResults');
-    }, 1500);
+    } else {
+      setIsLoading(false);
+      window.alert(resp.text)
+    }
   }
 
   const startOver = (e) => {
@@ -276,6 +247,7 @@ export default function VacationForm ({ setPlan }) {
     setDisplayRecs(false);
     setVacationLocation('');
     setNumTravellers('');
+    setNumDays('');
     setThingsToDoRecs([]);
     setRestaurantRecs([]);
   }
@@ -305,6 +277,11 @@ export default function VacationForm ({ setPlan }) {
     console.log('saved restaurant recs: ', savedRestaurantRecs)
     if (savedRestaurantRecs) {
       setRestaurantRecs(JSON.parse(savedRestaurantRecs));
+    };
+    const savedNumDays = localStorage.getItem('numDays');
+    console.log('saved num travel days: ', savedNumDays)
+    if (savedNumDays) {
+      setNumDays(JSON.parse(savedNumDays));
     };
   }, [])
 
@@ -354,6 +331,20 @@ export default function VacationForm ({ setPlan }) {
             placeholder='Enter # of travellers...'
             value={numTravellers}
             onChange={(e) => handleNumTravellersChange(e)}
+            />
+          </label>
+
+          <br />
+          <br />
+
+          <label>
+            How many days will you be travelling?&nbsp;
+            <br />
+            <input
+            type='number'
+            placeholder='Enter # of travel days...'
+            value={numDays}
+            onChange={(e) => handleNumDaysChange(e)}
             />
           </label>
 

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AiFillInfoCircle } from 'react-icons/ai';
-import { Tooltip } from 'react-tooltip';
 
 
 export default function VacationPlanResults ({ plan }) {
@@ -18,7 +16,7 @@ export default function VacationPlanResults ({ plan }) {
 
   const handlePlanTextChange = (e) => {
     setPlanText(e.target.value);
-    localStorage.setItem(e.target.value);
+    localStorage.setItem('plan', e.target.value);
   }
 
   const startOver = () => {
