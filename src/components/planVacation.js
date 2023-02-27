@@ -5,6 +5,7 @@ import { AiFillInfoCircle } from 'react-icons/ai';
 import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
 
+const recsURL = "http://localhost:5000/getRecommendations";
 
 const mockThingsToDoData = [
   {
@@ -61,6 +62,24 @@ const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations 
 const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
 const startOverTooltipText = 'If you choose to Start Over, all the information you\'ve entered so far will be lost, including your recommendations and selections.'
 
+const remLineNum = (rec) => {
+  const lineNumRegex = /^\d+\.\s*/;
+  return rec.replace(lineNumRegex, '');
+}
+
+const recsArrayToObjs = (recsArray) => {
+  const recObjs = [];
+  let numRec = 0;
+  for (let rec of recsArray) {
+    recObjs.push({
+      key: numRec,
+      text: remLineNum(rec),
+      checked: false
+    })
+    numRec += 1;
+  }
+  return recObjs;
+}
 
 export default function VacationForm ({ setPlan }) {
   const navigate = useNavigate();
@@ -109,7 +128,7 @@ export default function VacationForm ({ setPlan }) {
     localStorage.setItem('restaurantRecs', JSON.stringify(recs));
   }
 
-  const getRecs = (e) => {
+  const getRecs = async (e) => {
     e.preventDefault();
 
     console.log('Vacation location: ', vacationLocation);
@@ -124,46 +143,118 @@ export default function VacationForm ({ setPlan }) {
     // the data received from the API and format it similar to the way the mock data is formatted,
     // then call `setThingsToDoRecs` and `setRestaurantRecs` as below using that data
 
-    setThingsToDoRecs(mockThingsToDoData);
-    setRestaurantRecs(mockRestaurantsData);
+    const [thingsToDoResp, restaurantsResp] = await Promise.all([
+      fetch(recsURL, {
+        method: "POST",
+        body: JSON.stringify({
+          "location": vacationLocation,
+          "recommendationType": "thingsToDo"
+        }
+        ),
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }),
+      fetch(recsURL, {
+        method: "POST",
+        body: JSON.stringify({
+          "location": vacationLocation,
+          "recommendationType": "restaurants"
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }),
+    ])
 
-    localStorage.setItem('thingsToDoRecs', JSON.stringify(mockThingsToDoData));
-    localStorage.setItem('restaurantRecs', JSON.stringify(mockRestaurantsData));
+    if (thingsToDoResp.status === 200) {
+      const respData = await thingsToDoResp.json();
+      let recs = respData.recs;
+      recs = recsArrayToObjs(recs);
+      setThingsToDoRecs(recs);
+      localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
+    };
 
-    setTimeout(() => setIsLoading(false), 1000);
+    if (restaurantsResp.status === 200) {
+      const respData = await restaurantsResp.json();
+      let recs = respData.recs;
+      recs = recsArrayToObjs(recs);
+      setRestaurantRecs(recs);
+      localStorage.setItem('restaurantRecs', JSON.stringify(recs));
+    };
+
+    // setTimeout(() => setIsLoading(false), 1000);
+    setIsLoading(false);
   }
 
-  const getMoreThingsToDoRecs = (e) => {
+  const getMoreThingsToDoRecs = async (e) => {
     e.preventDefault();
-    const moreRecs = mockMoreThingsToDoData;
-    const recs = [...thingsToDoRecs]
-    let numRecs = recs.length
-    for (let rec of moreRecs) {
-      numRecs += 1;
-      recs.push({
-        key: numRecs,
-        text: rec
-      });
-    };
-    setThingsToDoRecs(recs);
-    localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
+    setIsLoading(true);
+    const moreRecsResp = await fetch(recsURL, {
+      method: "POST",
+      body: JSON.stringify({
+        "location": vacationLocation,
+        "recommendationType": "thingsToDo"
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+    if (moreRecsResp.status === 200) {
+      const respData = await moreRecsResp.json();
+      const moreRecs = respData.recs;
+      const recs = [...thingsToDoRecs]
+      let numRecs = recs.length
+      for (let rec of moreRecs) {
+        numRecs += 1;
+        recs.push({
+          key: numRecs,
+          text: remLineNum(rec),
+          checked: false
+        });
+      };
+      setThingsToDoRecs(recs);
+      localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      window.alert("call to recommendation service failed")
+    }
   }
 
-
-  const getMoreRestaurantRecs = (e) => {
+  const getMoreRestaurantRecs = async (e) => {
     e.preventDefault();
-    const moreRecs = mockMoreRestaurantsData;
-    const recs = [...restaurantRecs]
-    let numRecs = recs.length
-    for (let rec of moreRecs) {
-      numRecs += 1;
-      recs.push({
-        key: numRecs,
-        text: rec
-      });
-    };
-    setRestaurantRecs(recs);
-    localStorage.setItem('restaurantRecs', JSON.stringify(recs));
+    setIsLoading(true);
+    const moreRecsResp = await fetch(recsURL, {
+      method: "POST",
+      body: JSON.stringify({
+        "location": vacationLocation,
+        "recommendationType": "restaurants"
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+    if (moreRecsResp.status === 200) {
+      const respData = await moreRecsResp.json();
+      const moreRecs = respData.recs;
+      const recs = [...restaurantRecs]
+      let numRecs = recs.length
+      for (let rec of moreRecs) {
+        numRecs += 1;
+        recs.push({
+          key: numRecs,
+          text: remLineNum(rec),
+          checked: false
+        });
+      }
+      setRestaurantRecs(recs);
+      localStorage.setItem('restaurantRecs', JSON.stringify(recs));
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      window.alert("call to recommendation service failed")
+    }
   }
   
   const getVacationPlan = (e) => {
