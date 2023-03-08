@@ -8,158 +8,154 @@ import { tooltipStyle } from './tooltipStyle';
 const recsURL = "http://localhost:5000/getRecommendations";
 const planURL = "http://localhost:5000/getPlan"
 
-// tooltip text
-const vacationLocationText = 'We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!'
-const numTravellersText = 'Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!'
-const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or to see more recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
-const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
-const startOverTooltipText = 'If you choose to Start Over, all the information you\'ve entered so far will be lost, including your recommendations and selections.'
 
-const remLineNum = (rec) => {
-  const lineNumRegex = /^\d+\.\s*/;
-  return rec.replace(lineNumRegex, '');
-}
-
-const recsArrayToObjs = (recsArray) => {
-  const recObjs = [];
-  let numRec = 0;
-  for (let rec of recsArray) {
-    recObjs.push({
-      key: numRec,
-      text: remLineNum(rec),
-      checked: false
-    })
-    numRec += 1;
-  }
-  return recObjs;
-}
-
-export default function VacationForm ({ setPlan }) {
+export default function VacationForm ({ plans, setPlans }) {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
-
   const [vacationLocation, setVacationLocation] = useState('');
   const [numTravellers, setNumTravellers] = useState('');
   const [numDays, setNumDays] = useState('');
   const [thingsToDoRecs, setThingsToDoRecs] = useState([]);
   const [restaurantRecs, setRestaurantRecs] = useState([]);
-
   const [displayRecs, setDisplayRecs] = useState(false);
 
-  const handleNumTravellersChange = async (e) => {
-    e.target.value >= 1 && setNumTravellers(e.target.value);
-    e.target.value >= 1 && localStorage.setItem('numTravellers', e.target.value);
+  // tooltip text
+  const vacationLocationText = 'We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!'
+  const numTravellersText = 'Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!'
+  const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or to see more recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
+  const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
+  const startOverTooltipText = 'If you choose to Start Over, all the information you\'ve entered so far will be lost, including your recommendations and selections.'
+
+  // the keys and functions we'll use to display the data the user input on page reloads
+  const localStorageObjs = [
+    {
+      key: "vacationLocation",
+      setStateVarFn: setVacationLocation,
+      parseJSON: false,
+    },
+    {
+      key: "numTravellers",
+      setStateVarFn: setNumTravellers,
+      parseJSON: false,
+    },
+    {
+      key: "displayRecs",
+      setStateVarFn: setDisplayRecs,
+      parseJSON: false,
+    },
+    {
+      key: "thingsToDoRecs",
+      setStateVarFn: setThingsToDoRecs,
+      parseJSON: true,
+    },
+    {
+      key: "restaurantRecs",
+      setStateVarFn: setRestaurantRecs,
+      parseJSON: true,
+    },
+    {
+      key: "numDays",
+      setStateVarFn: setNumDays,
+      parseJSON: false
+    },
+  ]
+
+  const fetchRecs = async (recType) => {
+    return await fetch(recsURL, {
+      method: "POST",
+      body: JSON.stringify({
+        "location": vacationLocation,
+        "recommendationType": recType
+      }
+      ),
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+  }
+  
+  const handleRecsResp = async (resp, setStateVarFn, localStorageKey) => {
+    if (resp.status === 200) {
+      const respData = await resp.json();
+      let recs = respData.recs;
+      recs = recsArrayToObjs(recs);
+      setStateVarFn(recs);
+      localStorage.setItem(localStorageKey, JSON.stringify(recs));
+    } else {
+      window.alert("Unable to load data for " + localStorageKey);
+    }
+  }
+  
+  const remLineNum = (rec) => {
+    const lineNumRegex = /^\d+\.\s*/;
+    return rec.replace(lineNumRegex, '');
+  }
+  
+  const recsArrayToObjs = (recsArray) => {
+    const recObjs = [];
+    let numRec = 0;
+    for (let rec of recsArray) {
+      recObjs.push({
+        key: numRec,
+        text: remLineNum(rec),
+        checked: false
+      })
+      numRec += 1;
+    }
+    return recObjs;
   }
 
-  const handleNumDaysChange = async (e) => {
-    e.target.value >= 1 && setNumDays(e.target.value);
-    e.target.value >= 1 && localStorage.setItem('numDays', e.target.value);
+  const validateNumChange = (e, setVarFn, localStorageKey) => {
+    e.target.value >= 1 && setVarFn(e.target.value);
+    e.target.value >= 1 && localStorage.setItem(localStorageKey, e.target.value);
   }
 
-  const handleVacationLocationChange = async (e) => {
+  const handleVacationLocationChange = (e) => {
     setVacationLocation(e.target.value);
     localStorage.setItem('vacationLocation', e.target.value);
   }
 
-  const handleThingToDoCheckBoxChange = (e) => {
+  const handleCheckboxChange = (e, stateVar, setStateVar, localStorageKey) => {
     console.log('checked: ', e.target.checked);
-    const recs = [...thingsToDoRecs];
+    const recs = [...stateVar];
     for (let rec of recs) {
       if (rec.key == e.target.value) {
         console.log('found item')
         rec.checked = e.target.checked;
       };
     }
-    setThingsToDoRecs(recs);
-    localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
-  }
-
-  const handleRestaurantRecCheckboxChange = (e) => {
-    console.log('checked: ', e.target.checked);
-    const recs = [...restaurantRecs];
-    for (let rec of recs) {
-      if (rec.key == e.target.value) {
-        rec.checked = e.target.checked;
-      };
-    }
-    setRestaurantRecs(recs);
-    localStorage.setItem('restaurantRecs', JSON.stringify(recs));
+    setStateVar(recs);
+    localStorage.setItem(localStorageKey, JSON.stringify(recs));
   }
 
   const getRecs = async (e) => {
     e.preventDefault();
-
-    console.log('Vacation location: ', vacationLocation);
-    console.log('Number of travellers: ', numTravellers);
-
     setIsLoading(true);
     setDisplayRecs(true);
     localStorage.setItem('displayRecs', true);
 
     // make the call to the OpenAI microservice here to get the recommendations
     const [thingsToDoResp, restaurantsResp] = await Promise.all([
-      fetch(recsURL, {
-        method: "POST",
-        body: JSON.stringify({
-          "location": vacationLocation,
-          "recommendationType": "thingsToDo"
-        }
-        ),
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }),
-      fetch(recsURL, {
-        method: "POST",
-        body: JSON.stringify({
-          "location": vacationLocation,
-          "recommendationType": "restaurants"
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }),
-    ])
+      fetchRecs("thingsToDo"),
+      fetchRecs("restaurants")
+    ]);
 
-    if (thingsToDoResp.status === 200) {
-      const respData = await thingsToDoResp.json();
-      let recs = respData.recs;
-      recs = recsArrayToObjs(recs);
-      setThingsToDoRecs(recs);
-      localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
-    };
+    handleRecsResp(thingsToDoResp, setThingsToDoRecs, 'thingsToDoRecs');
+    handleRecsResp(restaurantsResp, setRestaurantRecs, 'restaurantRecs');
 
-    if (restaurantsResp.status === 200) {
-      const respData = await restaurantsResp.json();
-      let recs = respData.recs;
-      recs = recsArrayToObjs(recs);
-      setRestaurantRecs(recs);
-      localStorage.setItem('restaurantRecs', JSON.stringify(recs));
-    };
-
-    // setTimeout(() => setIsLoading(false), 1000);
     setIsLoading(false);
   }
 
-  const getMoreThingsToDoRecs = async (e) => {
+  const getMoreRecs = async (e, recsType, recsStateVar, setRecsStateVarFn, localStorageKey) => {
     e.preventDefault();
     setIsLoading(true);
-    const moreRecsResp = await fetch(recsURL, {
-      method: "POST",
-      body: JSON.stringify({
-        "location": vacationLocation,
-        "recommendationType": "thingsToDo"
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
-    if (moreRecsResp.status === 200) {
-      const respData = await moreRecsResp.json();
+    const recsResp = await fetchRecs(recsType);
+    if (recsResp.status === 200) {
+      const respData = await recsResp.json();
       const moreRecs = respData.recs;
-      const recs = [...thingsToDoRecs]
-      let numRecs = recs.length
+      const recs = [...recsStateVar];
+      let numRecs = recs.length;
       for (let rec of moreRecs) {
         numRecs += 1;
         recs.push({
@@ -168,48 +164,12 @@ export default function VacationForm ({ setPlan }) {
           checked: false
         });
       };
-      setThingsToDoRecs(recs);
-      localStorage.setItem('thingsToDoRecs', JSON.stringify(recs));
-      setIsLoading(false);
+      setRecsStateVarFn(recs);
+      localStorage.setItem(localStorageKey, JSON.stringify(recs));
     } else {
-      setIsLoading(false);
       window.alert("call to recommendation service failed")
-    }
-  }
-
-  const getMoreRestaurantRecs = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const moreRecsResp = await fetch(recsURL, {
-      method: "POST",
-      body: JSON.stringify({
-        "location": vacationLocation,
-        "recommendationType": "restaurants"
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
-    if (moreRecsResp.status === 200) {
-      const respData = await moreRecsResp.json();
-      const moreRecs = respData.recs;
-      const recs = [...restaurantRecs]
-      let numRecs = recs.length
-      for (let rec of moreRecs) {
-        numRecs += 1;
-        recs.push({
-          key: numRecs,
-          text: remLineNum(rec),
-          checked: false
-        });
-      }
-      setRestaurantRecs(recs);
-      localStorage.setItem('restaurantRecs', JSON.stringify(recs));
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-      window.alert("call to recommendation service failed")
-    }
+    };
+    setIsLoading(false);
   }
   
   const getVacationPlan = async (e) => {
@@ -232,8 +192,16 @@ export default function VacationForm ({ setPlan }) {
     if (resp.status === 200) {
       const respData = await resp.json();
       const plan = respData.vacationPlan;
-      console.log("plan: ", plan)
-      setPlan(plan);
+      
+      const currPlans = [...plans];
+      let numPlans = currPlans.length;
+      currPlans.push({
+        key: numPlans+1,
+        text: plan, 
+        location: vacationLocation
+      });
+      setPlans(currPlans);
+      localStorage.setItem('plans', JSON.stringify(currPlans));
       navigate('/vacationPlanResults');
     } else {
       setIsLoading(false);
@@ -243,7 +211,9 @@ export default function VacationForm ({ setPlan }) {
 
   const startOver = (e) => {
     e.preventDefault();
-    localStorage.clear();
+    for (let obj of localStorageObjs) {
+      localStorage.removeItem(obj.key);
+    }
     setDisplayRecs(false);
     setVacationLocation('');
     setNumTravellers('');
@@ -253,35 +223,14 @@ export default function VacationForm ({ setPlan }) {
   }
 
   useEffect(() => {
-    const savedVacationLocation = localStorage.getItem('vacationLocation');
-    console.log('saved vacation location: ', savedVacationLocation);
-    if (savedVacationLocation) {
-      setVacationLocation(savedVacationLocation);
-    };
-    const savedNumTravellers = localStorage.getItem('numTravellers');
-    console.log('saved # of travellers: ', savedNumTravellers);
-    if (savedNumTravellers) {
-      setNumTravellers(savedNumTravellers);
-    };
-    const savedDisplayRecs = localStorage.getItem('displayRecs');
-    console.log('saved display recs: ', savedDisplayRecs)
-    if (savedDisplayRecs) {
-      setDisplayRecs(Boolean(savedDisplayRecs));
-    };
-    const savedThingsToDoRecs = localStorage.getItem('thingsToDoRecs');
-    console.log('saved things to do recs: ', savedThingsToDoRecs)
-    if (savedThingsToDoRecs) {
-      setThingsToDoRecs(JSON.parse(savedThingsToDoRecs));
-    };
-    const savedRestaurantRecs = localStorage.getItem('restaurantRecs');
-    console.log('saved restaurant recs: ', savedRestaurantRecs)
-    if (savedRestaurantRecs) {
-      setRestaurantRecs(JSON.parse(savedRestaurantRecs));
-    };
-    const savedNumDays = localStorage.getItem('numDays');
-    console.log('saved num travel days: ', savedNumDays)
-    if (savedNumDays) {
-      setNumDays(JSON.parse(savedNumDays));
+    for (let obj of localStorageObjs) {
+      let saved = localStorage.getItem(obj.key);
+      if (saved) {
+        if (obj.parseJSON) {
+          saved = JSON.parse(saved);
+        }
+        obj.setStateVarFn(saved);
+      };
     };
   }, [])
 
@@ -330,7 +279,7 @@ export default function VacationForm ({ setPlan }) {
             type='number'
             placeholder='Enter # of travellers...'
             value={numTravellers}
-            onChange={(e) => handleNumTravellersChange(e)}
+            onChange={(e) => validateNumChange(e, setNumTravellers, 'numTravellers')}
             />
           </label>
 
@@ -344,7 +293,7 @@ export default function VacationForm ({ setPlan }) {
             type='number'
             placeholder='Enter # of travel days...'
             value={numDays}
-            onChange={(e) => handleNumDaysChange(e)}
+            onChange={(e) => validateNumChange(e, setNumDays, 'numDays')}
             />
           </label>
 
@@ -359,9 +308,6 @@ export default function VacationForm ({ setPlan }) {
           <br />
           <br />
           </>}
-
-          
-
         </form>
 
         {displayRecs &&
@@ -387,7 +333,7 @@ export default function VacationForm ({ setPlan }) {
                     <input 
                     type='checkbox' 
                     value={thing.key}
-                    onChange={e => handleThingToDoCheckBoxChange(e)}
+                    onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, 'thingsToDoRecs')}
                     checked={thing.checked}
                     key={i}
                     />
@@ -398,7 +344,7 @@ export default function VacationForm ({ setPlan }) {
             )})}
           </div>
           <br />
-          <button onClick={getMoreThingsToDoRecs}>
+          <button onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}>
             Get more recommendations!
           </button>
 
@@ -424,7 +370,7 @@ export default function VacationForm ({ setPlan }) {
                     <input
                     type='checkbox'
                     value={restaurant.key} 
-                    onChange={e => handleRestaurantRecCheckboxChange(e)}
+                    onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, 'restaurantRecs')}
                     checked={restaurant.checked}
                     key={i}
                     />
@@ -435,7 +381,7 @@ export default function VacationForm ({ setPlan }) {
             )})}
           </div>
           <br />
-          <button onClick={getMoreRestaurantRecs}>
+          <button onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}>
             Get more recommendations!
           </button>
           

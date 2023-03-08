@@ -10,15 +10,15 @@ import ExamplePlan from './components/examplePlan';
 
 
 export default function App() {
-  const [plan, setPlan] = useState('');
+  const [plans, setPlans] = useState([]);
   return (
     <Router>
       <Routes>
         <Route path="/" exact element={<WelcomePage />} />
         <Route path="/about" element={<About />} />
         <Route path="/examplePlan" element={<ExamplePlan />} />
-        <Route path="/planVacation" element={<PlanVacation setPlan={ setPlan }/>} />
-        <Route path="/vacationPlanResults" element={<VacationPlanResults plan={ plan }/>} />
+        <Route path="/planVacation" element={<PlanVacation plans={ plans } setPlans={ setPlans } />} />
+        <Route path="/vacationPlanResults" element={<VacationPlanResults plans={ plans } setPlans={ setPlans }/>} />
       </Routes>
     </Router>
   );
