@@ -15,10 +15,13 @@ export default function VacationPlanResult ({ plan, updatePlans }) {
   }
 
   const savePlan = () => {
-    setIsEditable(false); 
+    setIsEditable(false);
+    // reload the page so the PDF will re-render with the changes the user made
+    // this is the only way I could get the changes to be reflected in the PDF
     window.location.reload(true);
   }
 
+  // takes the user back to the vacation plan form so they can generate another plan
   const startOver = () => {
     const plans = localStorage.getItem("plans");
     localStorage.clear();
@@ -42,15 +45,11 @@ export default function VacationPlanResult ({ plan, updatePlans }) {
       :
         <button onClick={() => setIsEditable(true)}>Edit Plan</button>
       }
-      <br />
-      <br />
+      &nbsp;&nbsp;&nbsp;&nbsp;
       {plan.text && plan.location &&
       <PDFDownloadLink document={<Pdf planText={plan.text} vacationLocation={plan.location}/>} fileName="vacation_plan.pdf">
         Download as PDF
       </PDFDownloadLink>}
-      <br />
-      <br />
-      Or
       <br />
       <br />
       <button onClick={startOver}>Create Another Plan</button>

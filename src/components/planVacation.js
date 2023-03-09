@@ -75,6 +75,7 @@ export default function VacationForm ({ plans, setPlans }) {
     });
   }
   
+  // updates the state after making the request to the microservice to get recommendations
   const handleRecsResp = async (resp, setStateVarFn, localStorageKey) => {
     if (resp.status === 200) {
       const respData = await resp.json();
@@ -131,6 +132,10 @@ export default function VacationForm ({ plans, setPlans }) {
 
   const getRecs = async (e) => {
     e.preventDefault();
+    if (!vacationLocation || numDays < 1) {
+      window.alert("You must provide a vacation location and number of travel days");
+      return;
+    };
     setIsLoading(true);
     setDisplayRecs(true);
     localStorage.setItem('displayRecs', true);
@@ -156,13 +161,17 @@ export default function VacationForm ({ plans, setPlans }) {
       const moreRecs = respData.recs;
       const recs = [...recsStateVar];
       let numRecs = recs.length;
-      for (let rec of moreRecs) {
-        numRecs += 1;
-        recs.push({
-          key: numRecs,
-          text: remLineNum(rec),
-          checked: false
-        });
+      for (let newRec of moreRecs) {
+        newRec = remLineNum(newRec);
+        const dupRecs = recs.filter(rec => rec.text === newRec);
+        if (dupRecs.length === 0) {
+          numRecs += 1;
+          recs.push({
+            key: numRecs,
+            text: remLineNum(newRec),
+            checked: false
+          });
+        };
       };
       setRecsStateVarFn(recs);
       localStorage.setItem(localStorageKey, JSON.stringify(recs));
@@ -171,13 +180,8 @@ export default function VacationForm ({ plans, setPlans }) {
     };
     setIsLoading(false);
   }
-  
-  const getVacationPlan = async (e) => {
-    // make call to backend 
-    e.preventDefault();
-    setIsLoading(true);
-    const selectedThingsToDo = thingsToDoRecs.filter(item => item.checked === true).map(item => item.text);
-    const selectedRestaurants = restaurantRecs.filter(item => item.checked === true).map(item => item.text);
+
+  const fetchVacationPlan = async (selectedThingsToDo, selectedRestaurants) => {
     const resp = await fetch(planURL, {
       method: "POST",
       body: JSON.stringify({
@@ -189,26 +193,50 @@ export default function VacationForm ({ plans, setPlans }) {
         "Content-Type": "application/json",
       }
     })
+    return resp;
+  }
+
+  // updates the plans in the global state so users can refer to previously generated plans
+  const updatePlans = (newPlan) => {
+    const currPlans = [...plans];
+    let numPlans = currPlans.length;
+    currPlans.push({
+      key: numPlans+1,
+      text: newPlan, 
+      location: vacationLocation
+    });
+    setPlans(currPlans);
+    localStorage.setItem('plans', JSON.stringify(currPlans));
+  }
+  
+  // makes call to microservice and then takes the user to see the vacation plan results
+  const getAndViewPlan = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const selectedThingsToDo = thingsToDoRecs.filter(item => item.checked === true).map(item => item.text);
+    const selectedRestaurants = restaurantRecs.filter(item => item.checked === true).map(item => item.text);
+    const resp = await fetchVacationPlan(selectedThingsToDo, selectedRestaurants);
     if (resp.status === 200) {
       const respData = await resp.json();
-      const plan = respData.vacationPlan;
-      
-      const currPlans = [...plans];
-      let numPlans = currPlans.length;
-      currPlans.push({
-        key: numPlans+1,
-        text: plan, 
-        location: vacationLocation
-      });
-      setPlans(currPlans);
-      localStorage.setItem('plans', JSON.stringify(currPlans));
+      const newPlan = respData.vacationPlan;
+      updatePlans(newPlan);
       navigate('/vacationPlanResults');
     } else {
       setIsLoading(false);
       window.alert(resp.text)
-    }
+    };
   }
 
+  const viewCurrentPlans = (e) => {
+    e.preventDefault();
+    if (plans.length < 1) {
+      window.alert('No plans have been created yet');
+    } else {
+      navigate('/vacationPlanResults');
+    };
+  }
+
+  // clears the data in the form but leaves the plans in the global state unchanged
   const startOver = (e) => {
     e.preventDefault();
     for (let obj of localStorageObjs) {
@@ -311,7 +339,7 @@ export default function VacationForm ({ plans, setPlans }) {
         </form>
 
         {displayRecs &&
-        <form onSubmit={getVacationPlan}>
+        <form onSubmit={getAndViewPlan}>
 
           <div id='recs'>
             <h3>
@@ -389,11 +417,15 @@ export default function VacationForm ({ plans, setPlans }) {
           <br />
           <br />
           <input type="submit" value='Get Vacation Plan!'/>
-          &nbsp;
+          &nbsp;&nbsp;
+          <button onClick={viewCurrentPlans}>
+            View Current Plans
+          </button>
+          &nbsp;&nbsp;
           <button onClick={startOver}>
             Start Over
           </button>
-          &nbsp;
+          &nbsp;&nbsp;
           <AiFillInfoCircle id='start-over-tooltip' />
           <Tooltip
           style={tooltipStyle}

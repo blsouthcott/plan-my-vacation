@@ -4,6 +4,11 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 
 export default function VacationPlanResults ({ plans, setPlans }) {
+  // this component renders a tab for each plan stored in the global state
+
+  // the updatePlans function is passed down to the VacationPlanResult component so when the
+  // user makes changes to the plan in the text area in that component those changes
+  // are reflected when the user generates another plan and returns to that page
   const updatePlans = (updatedPlan) => {
     const updatedPlans = [...plans];
     for (let plan of updatedPlans) {
@@ -11,7 +16,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
         plan.text = updatedPlan.text;
         break;
       };
-    }
+    };
     localStorage.setItem('plans', JSON.stringify(updatedPlans));
     setPlans(updatedPlans);
   }
@@ -28,7 +33,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   }, [])
 
   return (
-    <Tabs>
+    <Tabs defaultIndex={plans.length-1}>
       <TabList>
         {plans.map((plan, i) => {
           return (
