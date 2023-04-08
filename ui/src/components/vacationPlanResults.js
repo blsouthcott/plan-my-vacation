@@ -33,19 +33,23 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   }, [])
 
   return (
-    <Tabs defaultIndex={plans.length-1}>
-      <TabList>
-        {plans.map((plan, i) => {
-          return (
-            <Tab key={i}>Plan {i+1}: {plan.location}</Tab>
-          );
-        })}
-      </TabList>
-      {plans.map((plan, i) => {
-        return (
-          <TabPanel key={i}>{<VacationPlanResult plan={plan} updatePlans={updatePlans}/>}</TabPanel>
-        );
-      })}
-    </Tabs>
+    <section className="hero is-primary is-fullheight">
+      <div className="hero-body">
+        <Tabs defaultIndex={plans.length-1}>
+          <TabList>
+            {plans.map((plan, i) => {
+              return (
+                <Tab key={i}>Plan {i+1}: {plan.location}</Tab>
+              );
+            })}
+          </TabList>
+          {plans.map((plan, i) => {
+            return (
+              <TabPanel key={i}>{<VacationPlanResult plan={plan} updatePlans={updatePlans}/>}</TabPanel>
+            );
+          })}
+        </Tabs>
+      </div>
+    </section>
   )
 }

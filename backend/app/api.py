@@ -77,5 +77,5 @@ class Itinerary(Resource):
 
         prompt += "Give the plan in the following format: Day 1\n[itinerary...]\n\nDay 2\n[itinerary...] etc."
 
-        itinerary_text = get_openai_completion(prompt)
+        itinerary_text = get_openai_completion(prompt).strip()
         return {"itinerary": itinerary_text}, 200

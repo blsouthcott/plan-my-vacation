@@ -267,183 +267,182 @@ export default function VacationForm ({ plans, setPlans }) {
   }, [])
 
   return (
-    <>
-      <h2>Let's Plan Your Vacation!</h2>
-      {isLoading ? <ClipLoader cssOverride={{display: "flex", position: "fixed", top: "50%", left: "50%",}}/> :
-      <div id='recs-form'>
-        <form onSubmit={getRecs}>
+    <section className="hero is-primary is-fullheight">
+      <div className="hero-body">
+        <div className="container">
+          <h1 style={{ display: isLoading ? 'none' : 'block' }} className="title">Let's Plan Your Vacation!</h1>
+          {isLoading ? <ClipLoader size={75} color="white" cssOverride={{ display: "flex", position: "fixed", top: "50%", left: "50%", }}/> :
+          <div className="columns">
+            <div className="column is-half">
+            <div className="box">
+              <label className="">
+                Where are you going?&nbsp;
+                <AiFillInfoCircle id='vacation-location-tooltip' data-tooltip-content={vacationLocationText} />
+                <Tooltip
+                  style={tooltipStyle}
+                  anchorId='vacation-location-tooltip' 
+                  place='right' 
+                  delayShow='300' 
+                  delayHide='100'
+                />
+                <br />
+                <input
+                  className="input mb-4"
+                  type='text'
+                  placeholder='Enter location...'
+                  value={vacationLocation}
+                  onChange={handleVacationLocationChange} 
+                />
+              </label>
+              <label className="">
+                How many people are you travelling with?&nbsp;
+                <AiFillInfoCircle id='num-travellers-tooltip' />
+                <Tooltip
+                  style={tooltipStyle}
+                  content={numTravellersText}
+                  anchorId='num-travellers-tooltip' 
+                  place='right'
+                  delayShow='300' 
+                  delayHide='100' 
+                />
+                <br />
+                <input
+                  className="input mb-4"
+                  type='number'
+                  placeholder='Enter # of travellers...'
+                  value={numTravellers}
+                  onChange={(e) => validateNumChange(e, setNumTravellers, 'numTravellers')}
+                />
+              </label>
+              <label className="">
+                How many days will you be travelling?&nbsp;
+                <br />
+                <input
+                  className="input mb-4"
+                  type='number'
+                  placeholder='Enter # of travel days...'
+                  value={numDays}
+                  onChange={(e) => validateNumChange(e, setNumDays, 'numDays')}
+                />
+              </label>
+              {!displayRecs &&
+              <>
+                <button className="button is-primary is-light has-text-black is-outlined mt-4" onClick={getRecs}>
+                  Get Recommendations!
+                </button>
+              </>}
+            </div>
 
-          <label>
-            Where are you going?&nbsp;
-            <AiFillInfoCircle id='vacation-location-tooltip' data-tooltip-content={vacationLocationText} />
-            <Tooltip
-            style={tooltipStyle}
-            anchorId='vacation-location-tooltip' 
-            place='right' 
-            delayShow='300' 
-            delayHide='100'
-            />
-            <br />
-            <input
-            type='text'
-            placeholder='Enter location...'
-            value={vacationLocation}
-            onChange={handleVacationLocationChange} 
-            />
-          </label>
+            {displayRecs &&
+            <>
+              <div className="box">
+                <p className="subtitle has-text-black">
+                  Things To Do&nbsp;
+                  <AiFillInfoCircle id='things-to-do-recs-tooltip' />
+                  <Tooltip
+                    style={tooltipStyle}
+                    html={thingsToDoRecsTooltipText}
+                    anchorId='things-to-do-recs-tooltip' 
+                    place='right'
+                    delayShow='300'
+                    delayHide='100' 
+                  />
+                </p>
+                {thingsToDoRecs.map((thing, i) => {
+                  return (
+                    <>
+                      <label className="has-text">
+                        <input 
+                          className="checkbox"
+                          type='checkbox' 
+                          value={thing.key}
+                          onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, 'thingsToDoRecs')}
+                          checked={thing.checked}
+                          key={i}
+                        />
+                        {" " + thing.text}
+                      </label>
+                      <br />
+                    </>
+                )})}
+                <button 
+                  onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
+                  className="button is-primary is-light has-text-black is-outlined mt-4"
+                >
+                  Get more recommendations!
+                </button>
+              </div>
 
-          <br />
-          <br />
+              <div className="box">
+                <h3 className="subtitle has-text-black">
+                  Restaurants&nbsp;
+                  <AiFillInfoCircle id='restaurant-recs-tooltip' />
+                  <Tooltip
+                    style={tooltipStyle}
+                    html={restaurantRecsTooltipText}
+                    anchorId='restaurant-recs-tooltip' 
+                    place='right'
+                    delayShow='300'
+                    delayHide='100' 
+                  />
+                </h3>
+                {restaurantRecs.map((restaurant, i) => {
+                  return (
+                    <>
+                      <label className="has-text-black">
+                        <input
+                          className="checkbox"
+                          type='checkbox'
+                          value={restaurant.key} 
+                          onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, 'restaurantRecs')}
+                          checked={restaurant.checked}
+                          key={i}
+                        />
+                        {" " + restaurant.text}
+                      </label>
+                      <br />
+                    </>
+                )})}
 
-          <label>
-            How many people are you travelling with?&nbsp;
-            <AiFillInfoCircle id='num-travellers-tooltip' />
-            <Tooltip
-            style={tooltipStyle}
-            content={numTravellersText}
-            anchorId='num-travellers-tooltip' 
-            place='right'
-            delayShow='300' 
-            delayHide='100' 
-            />
-            <br />
-            <input
-            type='number'
-            placeholder='Enter # of travellers...'
-            value={numTravellers}
-            onChange={(e) => validateNumChange(e, setNumTravellers, 'numTravellers')}
-            />
-          </label>
+                <button 
+                  onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}
+                  className="button is-primary is-light has-text-black is-outlined mt-4"
+                >
+                  Get more recommendations!
+                </button>
+              </div>
 
-          <br />
-          <br />
-
-          <label>
-            How many days will you be travelling?&nbsp;
-            <br />
-            <input
-            type='number'
-            placeholder='Enter # of travel days...'
-            value={numDays}
-            onChange={(e) => validateNumChange(e, setNumDays, 'numDays')}
-            />
-          </label>
-
-          <br />
-          <br />
-
-          {!displayRecs &&
-          <>
-          <button type='submit'>
-            Get Recommendations!
-          </button>
-          <br />
-          <br />
-          </>}
-        </form>
-
-        {displayRecs &&
-        <form onSubmit={getAndViewPlan}>
-
-          <div id='recs'>
-            <h3>
-              Things To Do
-              <AiFillInfoCircle id='things-to-do-recs-tooltip' />
-              <Tooltip
-              style={tooltipStyle}
-              html={thingsToDoRecsTooltipText}
-              anchorId='things-to-do-recs-tooltip' 
-              place='right'
-              delayShow='300'
-              delayHide='100' 
-              />
-            </h3>
-            {thingsToDoRecs.map((thing, i) => {
-              return (
-                <>
-                  <label>
-                    <input 
-                    type='checkbox' 
-                    value={thing.key}
-                    onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, 'thingsToDoRecs')}
-                    checked={thing.checked}
-                    key={i}
+              <div className="box">
+                <div className="columns">
+                  <div className="column is-one-third">
+                    <button className="button is-primary is-light has-text-black is-outlined" onClick={getAndViewPlan}>Get Vacation Plan!</button>
+                  </div>
+                  <div className="column is-one-third">
+                    <button className="button is-primary is-light has-text-black is-outlined" onClick={viewCurrentPlans}>
+                      View Current Plans
+                    </button>
+                  </div>
+                  <div className="column is-one-third">
+                    <button className="button is-primary is-light has-text-black is-outlined" onClick={startOver}>
+                      Start Over
+                    </button>
+                    <AiFillInfoCircle id='start-over-tooltip' />
+                    <Tooltip
+                      style={tooltipStyle}
+                      html={startOverTooltipText}
+                      anchorId='start-over-tooltip' 
+                      place='right'
+                      delayShow='300'
+                      delayHide='100' 
                     />
-                    {thing.text}
-                  </label>
-                  <br />
-                </>
-            )})}
-          </div>
-          <br />
-          <button onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}>
-            Get more recommendations!
-          </button>
-
-          <br />
-
-          <div className='recs'>
-            <h3>
-              Restaurants
-              <AiFillInfoCircle id='restaurant-recs-tooltip' />
-              <Tooltip
-              style={tooltipStyle}
-              html={restaurantRecsTooltipText}
-              anchorId='restaurant-recs-tooltip' 
-              place='right'
-              delayShow='300'
-              delayHide='100' 
-              />
-            </h3>
-            {restaurantRecs.map((restaurant, i) => {
-              return (
-                <>
-                  <label>
-                    <input
-                    type='checkbox'
-                    value={restaurant.key} 
-                    onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, 'restaurantRecs')}
-                    checked={restaurant.checked}
-                    key={i}
-                    />
-                    {restaurant.text}
-                  </label>
-                  <br />
-                </>
-            )})}
-          </div>
-          <br />
-          <button onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}>
-            Get more recommendations!
-          </button>
-          
-
-          <br />
-          <br />
-          <input type="submit" value='Get Vacation Plan!'/>
-          &nbsp;&nbsp;
-          <button onClick={viewCurrentPlans}>
-            View Current Plans
-          </button>
-          &nbsp;&nbsp;
-          <button onClick={startOver}>
-            Start Over
-          </button>
-          &nbsp;&nbsp;
-          <AiFillInfoCircle id='start-over-tooltip' />
-          <Tooltip
-          style={tooltipStyle}
-          html={startOverTooltipText}
-          anchorId='start-over-tooltip' 
-          place='right'
-          delayShow='300'
-          delayHide='100' 
-          />
-
-        </form>
-        }
+                  </div>
+                </div>
+              </div>
+            </>}
+            </div>
+          </div>}
+        </div>
       </div>
-      }
-    </>
+    </section>
   );
 }
