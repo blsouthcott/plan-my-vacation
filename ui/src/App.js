@@ -1,4 +1,5 @@
 import './App.css';
+import 'bulma/css/bulma.css';
 import 'react-tooltip/dist/react-tooltip.css'
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";

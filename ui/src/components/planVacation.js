@@ -5,8 +5,8 @@ import { AiFillInfoCircle } from 'react-icons/ai';
 import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
 
-const recsURL = "http://localhost:5000/getRecommendations";
-const planURL = "http://localhost:5000/getPlan"
+const recsURL = "http://localhost:5000/recommendations";
+const planURL = "http://localhost:5000/itinerary"
 
 
 export default function VacationForm ({ plans, setPlans }) {
@@ -61,14 +61,10 @@ export default function VacationForm ({ plans, setPlans }) {
     },
   ]
 
-  const fetchRecs = async (recType) => {
+  const fetchRecs = async (body) => {
     return await fetch(recsURL, {
       method: "POST",
-      body: JSON.stringify({
-        "location": vacationLocation,
-        "recommendationType": recType
-      }
-      ),
+      body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
       }
@@ -142,8 +138,14 @@ export default function VacationForm ({ plans, setPlans }) {
 
     // make the call to the OpenAI microservice here to get the recommendations
     const [thingsToDoResp, restaurantsResp] = await Promise.all([
-      fetchRecs("thingsToDo"),
-      fetchRecs("restaurants")
+      fetchRecs({
+        location: vacationLocation,
+        rec_type: "thingsToDo"
+      }),
+      fetchRecs({
+        location: vacationLocation,
+        rec_type: "restaurants"
+      })
     ]);
 
     handleRecsResp(thingsToDoResp, setThingsToDoRecs, 'thingsToDoRecs');
@@ -155,7 +157,11 @@ export default function VacationForm ({ plans, setPlans }) {
   const getMoreRecs = async (e, recsType, recsStateVar, setRecsStateVarFn, localStorageKey) => {
     e.preventDefault();
     setIsLoading(true);
-    const recsResp = await fetchRecs(recsType);
+    const recsResp = await fetchRecs({
+      location: vacationLocation,
+      rec_type: recsType,
+      exclusions: recsStateVar.map(rec => rec.text)
+    });
     if (recsResp.status === 200) {
       const respData = await recsResp.json();
       const moreRecs = respData.recs;
@@ -181,14 +187,10 @@ export default function VacationForm ({ plans, setPlans }) {
     setIsLoading(false);
   }
 
-  const fetchVacationPlan = async (selectedThingsToDo, selectedRestaurants) => {
+  const fetchVacationPlan = async (body) => {
     const resp = await fetch(planURL, {
       method: "POST",
-      body: JSON.stringify({
-        thingsToDo: selectedThingsToDo,
-        restaurants: selectedRestaurants,
-        numDays: numDays
-      }),
+      body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
       }
@@ -213,12 +215,14 @@ export default function VacationForm ({ plans, setPlans }) {
   const getAndViewPlan = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const selectedThingsToDo = thingsToDoRecs.filter(item => item.checked === true).map(item => item.text);
-    const selectedRestaurants = restaurantRecs.filter(item => item.checked === true).map(item => item.text);
-    const resp = await fetchVacationPlan(selectedThingsToDo, selectedRestaurants);
+    const resp = await fetchVacationPlan({
+      things_to_do: thingsToDoRecs.filter(item => item.checked === true).map(item => item.text),
+      restaurants: restaurantRecs.filter(item => item.checked === true).map(item => item.text),
+      num_days: numDays
+    });
     if (resp.status === 200) {
       const respData = await resp.json();
-      const newPlan = respData.vacationPlan;
+      const newPlan = respData.itinerary;
       updatePlans(newPlan);
       navigate('/vacationPlanResults');
     } else {
@@ -265,7 +269,7 @@ export default function VacationForm ({ plans, setPlans }) {
   return (
     <>
       <h2>Let's Plan Your Vacation!</h2>
-      {isLoading ? <ClipLoader /> :
+      {isLoading ? <ClipLoader cssOverride={{display: "flex", position: "fixed", top: "50%", left: "50%",}}/> :
       <div id='recs-form'>
         <form onSubmit={getRecs}>
 
