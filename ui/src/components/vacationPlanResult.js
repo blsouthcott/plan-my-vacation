@@ -18,7 +18,7 @@ export default function VacationPlanResult ({ plan, updatePlans }) {
     setIsEditable(false);
     // reload the page so the PDF will re-render with the changes the user made
     // this is the only way I could get the changes to be reflected in the PDF
-    window.location.reload(true);
+    window.location.reload();
   }
 
   // takes the user back to the vacation plan form so they can generate another plan

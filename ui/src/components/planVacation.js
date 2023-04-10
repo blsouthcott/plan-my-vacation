@@ -270,7 +270,7 @@ export default function VacationForm ({ plans, setPlans }) {
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
         <div className="container">
-          <h1 style={{ display: isLoading ? 'none' : 'block' }} className="title">Let's Plan Your Vacation!</h1>
+          <h1 style={{ display: isLoading ? 'none' : 'block' }} className="title m-4">Let's Plan Your Vacation!</h1>
           {isLoading ? <ClipLoader size={75} color="white" cssOverride={{ display: "flex", position: "fixed", top: "50%", left: "50%", }}/> :
           <div className="columns">
             <div className="column is-half">
