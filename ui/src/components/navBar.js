@@ -21,7 +21,7 @@ export default function Navbar({ plans }) {
           className={`navbar-burger burger ${isActive ? 'is-active' : ''}`}
           aria-label="menu"
           aria-expanded="false"
-          data-target="navbarBasicExample"
+          data-target="navbar"
           onClick={toggleBurger}
         >
           <span aria-hidden="true"></span>
@@ -31,7 +31,7 @@ export default function Navbar({ plans }) {
       </div>
 
       <div
-        id="navbarBasicExample"
+        id="navbar"
         className={`navbar-menu ${isActive ? 'is-active' : ''}`}
       >
         <div className="navbar-start">
