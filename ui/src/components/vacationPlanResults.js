@@ -1,10 +1,14 @@
 import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import VacationPlanResult from "./vacationPlanResult";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import Footer from "./footer";
 
 export default function VacationPlanResults ({ plans, setPlans }) {
   // this component renders a tab for each plan stored in the global state
+
+  const location = useLocation();
 
   // the updatePlans function is passed down to the VacationPlanResult component so when the
   // user makes changes to the plan in the text area in that component those changes
@@ -35,7 +39,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
-        <Tabs defaultIndex={plans.length-1}>
+        <Tabs defaultIndex={location.state?.planTabIndex || 0}>
           <TabList>
             {plans.map((plan, i) => {
               return (
@@ -50,6 +54,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
           })}
         </Tabs>
       </div>
+      <Footer />
     </section>
   )
 }
