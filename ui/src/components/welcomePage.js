@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Footer from './footer';
 
 export default function WelcomePage () {
   return (
@@ -25,6 +26,7 @@ export default function WelcomePage () {
           </div>
         </div>
       </div>
+      <Footer />
     </section>
   );
 }

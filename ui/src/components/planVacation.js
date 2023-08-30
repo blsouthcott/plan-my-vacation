@@ -4,9 +4,7 @@ import { ClipLoader } from 'react-spinners';
 import { AiFillInfoCircle } from 'react-icons/ai';
 import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
-
-const recsURL = "http://localhost:5000/recommendations";
-const planURL = "http://localhost:5000/itinerary"
+import Footer from './footer';
 
 
 export default function VacationForm ({ plans, setPlans }) {
@@ -62,7 +60,7 @@ export default function VacationForm ({ plans, setPlans }) {
   ]
 
   const fetchRecs = async (body) => {
-    return await fetch(recsURL, {
+    return await fetch("/api/recommendations", {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
@@ -157,14 +155,14 @@ export default function VacationForm ({ plans, setPlans }) {
   const getMoreRecs = async (e, recsType, recsStateVar, setRecsStateVarFn, localStorageKey) => {
     e.preventDefault();
     setIsLoading(true);
-    const recsResp = await fetchRecs({
+    const resp = await fetchRecs({
       location: vacationLocation,
       rec_type: recsType,
       exclusions: recsStateVar.map(rec => rec.text)
     });
-    if (recsResp.status === 200) {
-      const respData = await recsResp.json();
-      const moreRecs = respData.recs;
+    if (resp.status === 200) {
+      const data = await resp.json();
+      const moreRecs = data.recs;
       const recs = [...recsStateVar];
       let numRecs = recs.length;
       for (let newRec of moreRecs) {
@@ -188,7 +186,7 @@ export default function VacationForm ({ plans, setPlans }) {
   }
 
   const fetchVacationPlan = async (body) => {
-    const resp = await fetch(planURL, {
+    const resp = await fetch("/api/itinerary", {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
@@ -224,7 +222,7 @@ export default function VacationForm ({ plans, setPlans }) {
       const respData = await resp.json();
       const newPlan = respData.itinerary;
       updatePlans(newPlan);
-      navigate('/vacationPlanResults');
+      navigate('/vacationPlanResults', {state: {planTabIndex: plans.length}});
     } else {
       setIsLoading(false);
       window.alert(resp.text)
@@ -443,6 +441,7 @@ export default function VacationForm ({ plans, setPlans }) {
           </div>}
         </div>
       </div>
+      <Footer />
     </section>
   );
 }

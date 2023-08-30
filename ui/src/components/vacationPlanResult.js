@@ -34,7 +34,7 @@ export default function VacationPlanResult ({ plan }) {
               Download as PDF
             </PDFDownloadLink>
           </button>}
-          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2" onClick={startOver}>Create Another Plan</button>
+          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2" onClick={startOver}>Plan Another Vacation!</button>
       </div>
     </div>
   )

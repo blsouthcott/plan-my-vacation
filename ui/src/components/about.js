@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AiFillInfoCircle } from 'react-icons/ai';
 import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
+import Footer from './footer';
 
 export default function About () {
   const tooltipText = 'We use OpenAI to power our application.'
@@ -30,6 +31,7 @@ export default function About () {
           </div>
         </div>
       </div>
+      <Footer />
     </section>
   );
 }
