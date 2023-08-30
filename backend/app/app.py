@@ -5,22 +5,25 @@ from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
 
-from dotenv import load_dotenv
-
 from .api import Recommendations, Itinerary
 
-load_dotenv()
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, origins=os.environ["ALLOWED_HOSTS"])
+    allowed_origins = os.getenv("ALLOWED_ORIGINS")
+    if allowed_origins:
+        CORS(app, origins=allowed_origins)
     app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
     return app
 
 
 app = create_app()
+
+
+# put the routes that will serve the frontend here
+
 api = Api(app)
-api.add_resource(Recommendations, "/recommendations")
-api.add_resource(Itinerary, "/itinerary")
+api.add_resource(Recommendations, "/api/recommendations")
+api.add_resource(Itinerary, "/api/itinerary")
