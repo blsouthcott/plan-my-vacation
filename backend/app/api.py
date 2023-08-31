@@ -1,14 +1,16 @@
 import logging
 import os
 
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 import openai
 
+from .app import limiter
+
 openai.api_key = os.environ["OPENAI_API_KEY"]
-model = "text-davinci-003"
-temperature = 0.5
-top_p = 1.0
+MODEL = "gpt-3.5-turbo"
+TEMPERATURE = 0.5
+TOP_P = 1.0
 
 
 class RecTypes:
@@ -17,23 +19,21 @@ class RecTypes:
 
 
 def get_openai_completion(prompt):
-
-    resp = openai.Completion.create(
-        model=model,
-        prompt=prompt,
-        temperature=temperature,
-        top_p=top_p,
+    resp = openai.ChatCompletion.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMPERATURE,
+        top_p=TOP_P,
         max_tokens=500
     )
-
-    return resp.choices[0].text
+    return resp.choices[0].message.content
 
 
 class Recommendations(Resource):
 
+    @limiter.limit("30 per hour; 50 per day")
     def post(self):
         body = request.get_json()
-
         if not (location := body.get("location")):
             return "location is a required field", 400
         if not (rec_type := body.get("rec_type")):
@@ -48,18 +48,18 @@ class Recommendations(Resource):
         
         prompt += " The recommendations should each be given on a new line with no commas and no text should be included other than the recommendations."
 
-        recs_text = get_openai_completion([prompt])
+        recs_text = get_openai_completion(prompt)
         logging.debug(f"OpenAI recs response: {recs_text}")
         recs = [rec for rec in recs_text.split("\n") if rec]
 
-        return {"recs": recs}, 200
+        return jsonify(recs=recs)
 
 
 class Itinerary(Resource):
 
+    @limiter.limit("10 per hour; 15 per day")
     def post(self):
         body = request.get_json()
-
         things_to_do = body.get("things_to_do")
         restaurants = body.get("restaurants")
         if not things_to_do and not restaurants:
@@ -78,4 +78,4 @@ class Itinerary(Resource):
         prompt += "Give the plan in the following format: Day 1\n[itinerary...]\n\nDay 2\n[itinerary...] etc."
 
         itinerary_text = get_openai_completion(prompt).strip()
-        return {"itinerary": itinerary_text}, 200
+        return jsonify(itinerary=itinerary_text)

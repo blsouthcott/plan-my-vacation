@@ -72,11 +72,14 @@ export default function VacationForm ({ plans, setPlans }) {
   // updates the state after making the request to the microservice to get recommendations
   const handleRecsResp = async (resp, setStateVarFn, localStorageKey) => {
     if (resp.status === 200) {
-      const respData = await resp.json();
-      let recs = respData.recs;
+      const data = await resp.json();
+      let recs = data.recs;
       recs = recsArrayToObjs(recs);
       setStateVarFn(recs);
       localStorage.setItem(localStorageKey, JSON.stringify(recs));
+    } else if (resp.status === 429) {
+      const data = await resp.json();
+      window.alert("You have exceeded your current request limit: " + data.message)
     } else {
       window.alert("Unable to load data for " + localStorageKey);
     }
@@ -179,8 +182,12 @@ export default function VacationForm ({ plans, setPlans }) {
       };
       setRecsStateVarFn(recs);
       localStorage.setItem(localStorageKey, JSON.stringify(recs));
+    } else if (resp.status === 429) {
+      const data = await resp.json();
+      window.alert("You have exceeded your current request limit: " + data.message)
     } else {
-      window.alert("call to recommendation service failed")
+      const text = await resp.text();
+      window.alert(text);
     };
     setIsLoading(false);
   }
@@ -219,14 +226,18 @@ export default function VacationForm ({ plans, setPlans }) {
       num_days: numDays
     });
     if (resp.status === 200) {
-      const respData = await resp.json();
-      const newPlan = respData.itinerary;
+      const data = await resp.json();
+      const newPlan = data.itinerary;
       updatePlans(newPlan);
       navigate('/vacationPlanResults', {state: {planTabIndex: plans.length}});
+    } else if (resp.status === 429) {
+      const data = await resp.json();
+      window.alert("You have exceeded your current request limit: " + data.message)
     } else {
-      setIsLoading(false);
-      window.alert(resp.text)
+      const text = await resp.text();
+      window.alert(text);
     };
+    setIsLoading(false);
   }
 
   const viewCurrentPlans = (e) => {
