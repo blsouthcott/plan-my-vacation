@@ -1,9 +1,48 @@
 import React, { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import VacationPlanResult from "./vacationPlanResult";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { Pdf } from './pdf';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import 'react-tabs/style/react-tabs.css';
 import Footer from "./footer";
+
+
+function VacationPlanResult ({ plan }) {
+  const navigate = useNavigate();
+
+  const pdfDownloadName = `${plan.location} Plan.pdf`;
+
+  // takes the user back to the vacation plan form so they can generate another plan
+  const startOver = () => {
+    const plans = localStorage.getItem("plans");
+    localStorage.clear();
+    localStorage.setItem("plans", plans);
+    navigate('/planVacation');
+  }
+  
+  return (
+    <div>
+      <h1 className="title">Your Tailored Vacation Plan</h1>
+      <textarea
+        className="textarea"
+        rows="15"
+        cols="75"
+        value={plan.text}
+        readOnly={true}
+      />
+      <div className="">
+        {plan.text && plan.location &&
+          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2 mr-2">
+            <PDFDownloadLink document={<Pdf planText={plan.text} vacationLocation={plan.location}/>} fileName={pdfDownloadName}>
+              Download as PDF
+            </PDFDownloadLink>
+          </button>}
+          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2" onClick={startOver}>Plan Another Vacation!</button>
+      </div>
+    </div>
+  )
+}
+
 
 export default function VacationPlanResults ({ plans, setPlans }) {
   // this component renders a tab for each plan stored in the global state
@@ -39,20 +78,22 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
-        <Tabs defaultIndex={location.state?.planTabIndex || 0}>
-          <TabList>
+        <div className="container">
+          <Tabs defaultIndex={location.state?.planTabIndex || 0}>
+            <TabList>
+              {plans.map((plan, i) => {
+                return (
+                  <Tab key={i}>Plan {i+1}: {plan.location}</Tab>
+                );
+              })}
+            </TabList>
             {plans.map((plan, i) => {
               return (
-                <Tab key={i}>Plan {i+1}: {plan.location}</Tab>
+                <TabPanel key={i}>{<VacationPlanResult plan={plan} updatePlans={updatePlans}/>}</TabPanel>
               );
             })}
-          </TabList>
-          {plans.map((plan, i) => {
-            return (
-              <TabPanel key={i}>{<VacationPlanResult plan={plan} updatePlans={updatePlans}/>}</TabPanel>
-            );
-          })}
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
       <Footer />
     </section>

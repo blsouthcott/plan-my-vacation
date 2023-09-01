@@ -10,7 +10,7 @@ export default function About () {
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
-        <div className = "container">
+        <div className="container">
           <h1 className="title">About Plan Your Vacation</h1>
           <div className="card">
             <div className="card-content">

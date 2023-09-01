@@ -1,14 +1,19 @@
-import React, { useState } from "react";
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUmbrellaBeach } from '@fortawesome/free-solid-svg-icons';
 
 export default function Navbar({ plans }) {
-  const [isActive, setIsActive] = useState(false);
+  const location = useLocation();
+  const [burgerIsActive, setBurgerIsActive] = useState(false);
 
   const toggleBurger = () => {
-    setIsActive(!isActive);
+    setBurgerIsActive(!burgerIsActive);
   };
+
+  useEffect(() => {
+    setBurgerIsActive(false);
+  }, [location])
 
   return (
     <nav className="navbar is-fixed-top" role="navigation" aria-label="main navigation">
@@ -18,41 +23,38 @@ export default function Navbar({ plans }) {
         </Link>
 
         <button
-          className={`navbar-burger burger ${isActive ? 'is-active' : ''}`}
+          className={`navbar-burger burger ${burgerIsActive ? 'is-active' : ''}`}
           aria-label="menu"
           aria-expanded="false"
           data-target="navbar"
-          onClick={toggleBurger}
-        >
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
+          onClick={toggleBurger}>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
         </button>
       </div>
 
       <div
         id="navbar"
-        className={`navbar-menu ${isActive ? 'is-active' : ''}`}
-      >
-        <div className="navbar-start">
-          <Link className="navbar-item" to="/">
-            Home
-          </Link>
-
-          <Link className="navbar-item" to="/about">
-            About
-          </Link>
-
-          <Link className="navbar-item" to="/planVacation">
-            Plan Vacation
-          </Link>
-
-          {plans.length > 0 &&
-            <Link className="navbar-item" to="/vacationPlanResults">
-              View Current Plans
+        className={`navbar-menu ${burgerIsActive ? 'is-active' : ''}`}>
+          <div className="navbar-start">
+            <Link className="navbar-item" to="/">
+              Home
             </Link>
-          }
-        </div>
+
+            <Link className="navbar-item" to="/about">
+              About
+            </Link>
+
+            <Link className="navbar-item" to="/planVacation">
+              Plan Vacation
+            </Link>
+
+            {plans.length > 0 &&
+              <Link className="navbar-item" to="/vacationPlanResults">
+                View Current Plans
+              </Link>}
+          </div>
       </div>
     </nav>
   );

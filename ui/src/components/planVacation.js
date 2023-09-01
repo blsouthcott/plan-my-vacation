@@ -278,23 +278,22 @@ export default function VacationForm ({ plans, setPlans }) {
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
-        <div className="container">
-          <h1 style={{ display: isLoading ? 'none' : 'block' }} className="title m-4">Let's Plan Your Vacation!</h1>
+        <div className="container is-flex is-flex-direction-column is-justify-content-center">
           {isLoading ? <ClipLoader size={75} color="white" cssOverride={{ display: "block", margin: "0 auto" }}/> :
-          <div className="columns">
-            <div className="column is-half">
+          <>
+            <p className="title m-4">Let's Plan Your Vacation!</p>
             <div className="box">
-              <label className="">
-                Where are you going?&nbsp;
-                <AiFillInfoCircle id='vacation-location-tooltip' data-tooltip-content={vacationLocationText} />
-                <Tooltip
+              <label>Where are you going?&nbsp;
+              <AiFillInfoCircle id='vacation-location-tooltip' data-tooltip-content={vacationLocationText} />
+              <Tooltip
                   style={tooltipStyle}
                   anchorId='vacation-location-tooltip' 
                   place='right' 
                   delayShow='300' 
                   delayHide='100'
                 />
-                <br />
+              </label>
+              <div className="control">
                 <input
                   className="input mb-4"
                   type='text'
@@ -302,9 +301,8 @@ export default function VacationForm ({ plans, setPlans }) {
                   value={vacationLocation}
                   onChange={handleVacationLocationChange} 
                 />
-              </label>
-              <label className="">
-                How many people are you travelling with?&nbsp;
+              </div>
+              <label>How many people are you travelling with?&nbsp;
                 <AiFillInfoCircle id='num-travellers-tooltip' />
                 <Tooltip
                   style={tooltipStyle}
@@ -314,7 +312,8 @@ export default function VacationForm ({ plans, setPlans }) {
                   delayShow='300' 
                   delayHide='100' 
                 />
-                <br />
+              </label>
+              <div className="control">
                 <input
                   className="input mb-4"
                   type='number'
@@ -322,10 +321,11 @@ export default function VacationForm ({ plans, setPlans }) {
                   value={numTravellers}
                   onChange={(e) => validateNumChange(e, setNumTravellers, 'numTravellers')}
                 />
-              </label>
-              <label className="">
+              </div>
+              <label>
                 How many days will you be travelling?&nbsp;
-                <br />
+              </label>
+              <div className="control">
                 <input
                   className="input mb-4"
                   type='number'
@@ -333,18 +333,17 @@ export default function VacationForm ({ plans, setPlans }) {
                   value={numDays}
                   onChange={(e) => validateNumChange(e, setNumDays, 'numDays')}
                 />
-              </label>
+              </div>
               {!displayRecs &&
               <>
                 <button className="button is-primary is-light has-text-black is-outlined mt-4" onClick={getRecs}>
                   Get Recommendations!
                 </button>
               </>}
-            </div>
-
-            {displayRecs &&
-            <>
-              <div className="box">
+              
+              {displayRecs && 
+              <>
+                <hr />
                 <p className="subtitle has-text-black">
                   Things To Do&nbsp;
                   <AiFillInfoCircle id='things-to-do-recs-tooltip' />
@@ -357,6 +356,7 @@ export default function VacationForm ({ plans, setPlans }) {
                     delayHide='100' 
                   />
                 </p>
+
                 {thingsToDoRecs.map((thing, i) => {
                   return (
                     <>
@@ -376,14 +376,13 @@ export default function VacationForm ({ plans, setPlans }) {
                 )})}
                 <button 
                   onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
-                  className="button is-primary is-light has-text-black is-outlined mt-4"
-                >
+                  className="button is-primary is-light has-text-black is-outlined mt-4">
                   Get more recommendations!
                 </button>
-              </div>
+                
+                <hr />
 
-              <div className="box">
-                <h3 className="subtitle has-text-black">
+                <p className="subtitle has-text-black">
                   Restaurants&nbsp;
                   <AiFillInfoCircle id='restaurant-recs-tooltip' />
                   <Tooltip
@@ -393,8 +392,9 @@ export default function VacationForm ({ plans, setPlans }) {
                     place='right'
                     delayShow='300'
                     delayHide='100' 
-                  />
-                </h3>
+                  />&nbsp;
+                </p>
+
                 {restaurantRecs.map((restaurant, i) => {
                   return (
                     <>
@@ -412,44 +412,37 @@ export default function VacationForm ({ plans, setPlans }) {
                       <br />
                     </>
                 )})}
-
                 <button 
                   onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}
-                  className="button is-primary is-light has-text-black is-outlined mt-4"
-                >
+                  className="button is-primary is-light has-text-black is-outlined mt-4">
                   Get more recommendations!
                 </button>
-              </div>
 
-              <div className="box">
-                <div className="columns">
-                  <div className="column is-one-third">
-                    <button className="button is-primary is-light has-text-black is-outlined" onClick={getAndViewPlan}>Get Vacation Plan!</button>
-                  </div>
-                  <div className="column is-one-third">
-                    <button className="button is-primary is-light has-text-black is-outlined" onClick={viewCurrentPlans}>
-                      View Current Plans
-                    </button>
-                  </div>
-                  <div className="column is-one-third">
-                    <button className="button is-primary is-light has-text-black is-outlined" onClick={startOver}>
-                      Start Over
-                    </button>
-                    <AiFillInfoCircle id='start-over-tooltip' />
-                    <Tooltip
-                      style={tooltipStyle}
-                      html={startOverTooltipText}
-                      anchorId='start-over-tooltip' 
-                      place='right'
-                      delayShow='300'
-                      delayHide='100' 
-                    />
-                  </div>
+                <hr />
+                  
+                <div className="is-flex is-align-content-left is-align-content-space-between is-flex-wrap-wrap">
+                  <button className="button is-full-mobile is-primary is-light has-text-black is-outlined" onClick={getAndViewPlan}>
+                    Get Vacation Plan!
+                  </button>
+                  <button className="button mx-2 is-full-mobile is-primary is-light has-text-black is-outlined" onClick={viewCurrentPlans}>
+                    View Current Plans
+                  </button>
+                  <button className="button is-full-mobile is-primary is-light has-text-black is-outlined" onClick={startOver}>
+                    Start Over
+                  </button>
+                  {/* <AiFillInfoCircle id='start-over-tooltip' />
+                  <Tooltip
+                    style={tooltipStyle}
+                    html={startOverTooltipText}
+                    anchorId='start-over-tooltip' 
+                    place='right'
+                    delayShow='300'
+                    delayHide='100' 
+                  /> */}
                 </div>
-              </div>
-            </>}
+              </>}
             </div>
-          </div>}
+          </>}
         </div>
       </div>
       <Footer />

@@ -7,3 +7,10 @@ textarea:not([readonly]) {
   background-color: white;
   cursor: text;
 }
+
+@media (max-width: 768px) {
+  .button {
+    flex: 100%;
+    margin: 0.5em
+  }
+}
