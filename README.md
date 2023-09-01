@@ -22,10 +22,17 @@ Click [here](https://youtu.be/QNDQf34etvo) to see a demo of this project!
 3. Navigate to the backend directory with `cd backend`
 4. Run `poetry env use 3.11.x`
 5. Install the dependencies with `poetry install --no-root`
-6. Navigate to the frontend directory with `cd ../ui`
-7. Install frontend dependencies: `npm install`
-8. Start the backend from the backend directory with `poetry shell && flask run --port=5001`
-9. Start the frontend from the frontend directory with `npm start`
+6. The following environment variables should be saved in a `.flaskenv` file in the backend directory:
+   - FLASK_APP=run.py
+   - FLASK_ENV=development (optional)
+   - FLASK_DEBUG=1 (optional)
+   - OPENAI_API_KEY={your OpenAI API key}
+   - SECRET_KEY={something super secret}
+   - MONGO_CONNECTION_STRING={your MongoDB connectino string}
+8. Navigate to the frontend directory with `cd ../ui`
+9. Install frontend dependencies: `npm install`
+10. Start the backend from the backend directory with `poetry shell && flask run --port=5001`
+11. Start the frontend from the frontend directory with `npm start`
 
 ## Usage
 
