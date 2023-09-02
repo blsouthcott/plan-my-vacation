@@ -1,3 +1,3 @@
 # custom startup script for heroku
 #!/bin/sh
-cd server && gunicorn run:app
+cd backend && gunicorn run:app
