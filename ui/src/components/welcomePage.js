@@ -7,9 +7,10 @@ export default function WelcomePage () {
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
         <div className="container">
-          <h1 className="title">Welcome to Plan Your Vacation!</h1>
-          <div className="columms">
-            <div className="column is-half">
+          <div className="is-flex is-justify-content-center">
+            <h1 className="title">Welcome to Plan Your Vacation!</h1>
+          </div>
+          <div className="is-flex is-justify-content-center my-3">
             <div className="card">
               <div className="card-content">
                 <div className="content">
@@ -21,7 +22,6 @@ export default function WelcomePage () {
                   </p>
                 </div>
               </div>
-          </div>
             </div>
           </div>
         </div>

@@ -85,9 +85,12 @@ export default function VacationForm ({ plans, setPlans }) {
     }
   }
   
-  const remLineNum = (rec) => {
+  const sanitizeRecText = (rec) => {
     const lineNumRegex = /^\d+\.\s*/;
-    return rec.replace(lineNumRegex, '');
+    rec = rec.replace(lineNumRegex, '').trim();
+    rec = rec.endsWith(".") && rec.slice(0, -1);
+    rec = rec.startsWith("-") && rec.slice(1);
+    return rec.trim();
   }
   
   const recsArrayToObjs = (recsArray) => {
@@ -96,7 +99,7 @@ export default function VacationForm ({ plans, setPlans }) {
     for (let rec of recsArray) {
       recObjs.push({
         key: numRec,
-        text: remLineNum(rec),
+        text: sanitizeRecText(rec),
         checked: false
       })
       numRec += 1;
@@ -167,13 +170,13 @@ export default function VacationForm ({ plans, setPlans }) {
       const recs = [...recsStateVar];
       let numRecs = recs.length;
       for (let newRec of moreRecs) {
-        newRec = remLineNum(newRec);
+        newRec = sanitizeRecText(newRec);
         const dupRecs = recs.filter(rec => rec.text === newRec);
         if (dupRecs.length === 0) {
           numRecs += 1;
           recs.push({
             key: numRecs,
-            text: remLineNum(newRec),
+            text: sanitizeRecText(newRec),
             checked: false
           });
         };
