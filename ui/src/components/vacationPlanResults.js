@@ -78,7 +78,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
-        <div className="container">
+        <div className="container my-3">
           <Tabs defaultIndex={location.state?.planTabIndex || 0}>
             <TabList>
               {plans.map((plan, i) => {
