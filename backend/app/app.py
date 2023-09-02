@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 limiter = Limiter(get_remote_address, storage_uri=os.environ["MONGO_CONNECTION_STRING"], strategy="fixed-window")
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder=os.path.abspath(os.path.join(__file__, "../../../ui/build")))
     allowed_origins = os.getenv("ALLOWED_ORIGINS")
     if allowed_origins:
         CORS(app, origins=allowed_origins)
