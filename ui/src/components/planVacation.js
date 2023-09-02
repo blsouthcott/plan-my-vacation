@@ -115,11 +115,9 @@ export default function VacationForm ({ plans, setPlans }) {
   }
 
   const handleCheckboxChange = (e, stateVar, setStateVar, localStorageKey) => {
-    console.log('checked: ', e.target.checked);
     const recs = [...stateVar];
     for (let rec of recs) {
       if (rec.key == e.target.value) {
-        console.log('found item')
         rec.checked = e.target.checked;
       };
     }

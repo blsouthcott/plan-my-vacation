@@ -1,12 +1,10 @@
 import os
-import logging
 
 from flask import Flask
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-logging.basicConfig(level=logging.INFO)
 
 limiter = Limiter(get_remote_address, storage_uri=os.environ["MONGO_CONNECTION_STRING"], strategy="fixed-window")
 

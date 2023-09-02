@@ -69,7 +69,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
       console.log("no plans prop data")
       const savedPlans = localStorage.getItem('plans');
       if (savedPlans) {
-        console.log("setting plans to: ", savedPlans)
+        console.log("setting vacation plans from local storage");
         setPlans(JSON.parse(savedPlans));
       };
     }

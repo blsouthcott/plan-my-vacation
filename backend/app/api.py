@@ -12,6 +12,8 @@ MODEL = "gpt-3.5-turbo"
 TEMPERATURE = 0.5
 TOP_P = 1.0
 
+logging.basicConfig(level=logging.INFO)
+
 
 class RecTypes:
     thingsToDo = "things to do"
@@ -33,6 +35,7 @@ class Recommendations(Resource):
 
     @limiter.limit("30 per hour; 50 per day")
     def post(self):
+        logging.info("Handling request to Recommendations...")
         body = request.get_json()
         if not (location := body.get("location")):
             return "location is a required field", 400
@@ -49,7 +52,6 @@ class Recommendations(Resource):
         prompt += " The recommendations should each be given on a new line with no commas and no text should be included other than the recommendations."
 
         recs_text = get_openai_completion(prompt)
-        logging.debug(f"OpenAI recs response: {recs_text}")
         recs = [rec for rec in recs_text.split("\n") if rec]
 
         return jsonify(recs=recs)
@@ -59,6 +61,7 @@ class Itinerary(Resource):
 
     @limiter.limit("10 per hour; 15 per day")
     def post(self):
+        logging.info("Handling request to Itinerary to generate vacation plan...")
         body = request.get_json()
         things_to_do = body.get("things_to_do")
         restaurants = body.get("restaurants")
