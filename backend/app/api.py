@@ -33,8 +33,9 @@ def get_openai_completion(prompt):
 
 class Recommendations(Resource):
 
-    # @limiter.limit("30 per hour; 50 per day")
-    @limiter.limit("3 per hour; 5 per day")
+    @limiter.limit("30 per hour; 50 per day")
+    # for testing
+    # @limiter.limit("3 per hour; 5 per day")
     def post(self):
         logging.info("Handling request to Recommendations...")
         body = request.get_json()
@@ -60,8 +61,9 @@ class Recommendations(Resource):
 
 class Itinerary(Resource):
 
-    # @limiter.limit("10 per hour; 15 per day")
-    @limiter.limit("1 per hour; 5 per day")
+    @limiter.limit("10 per hour; 15 per day")
+    # for testing
+    # @limiter.limit("1 per hour; 5 per day")
     def post(self):
         logging.info("Handling request to Itinerary to generate vacation plan...")
         body = request.get_json()
