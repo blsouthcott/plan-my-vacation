@@ -79,6 +79,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
         <div className="container my-3">
+          {/* TODO: use select dropdown and title instead of Tabs */}
           <Tabs defaultIndex={location.state?.planTabIndex || 0}>
             <TabList>
               {plans.map((plan, i) => {

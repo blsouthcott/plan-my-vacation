@@ -3,10 +3,11 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+
+from .limiter import get_forwarded_for
 
 
-limiter = Limiter(get_remote_address, storage_uri=os.environ["MONGO_CONNECTION_STRING"], strategy="fixed-window")
+limiter = Limiter(get_forwarded_for, storage_uri=os.environ["MONGO_CONNECTION_STRING"], strategy="fixed-window")
 
 def create_app():
     app = Flask(__name__, static_folder=os.path.abspath(os.path.join(__file__, "../../../ui/build")))
