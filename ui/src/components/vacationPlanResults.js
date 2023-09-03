@@ -1,99 +1,82 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import { Pdf } from './pdf';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import 'react-tabs/style/react-tabs.css';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Pdf } from "./pdf";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import "react-tabs/style/react-tabs.css";
 import Footer from "./footer";
 
 
-function VacationPlanResult ({ plan }) {
+export default function VacationPlanResults ({ plans, setPlans }) {
   const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
-  const pdfDownloadName = `${plan.location} Plan.pdf`;
+  const pdfDownloadName = `${selectedPlan?.location} Plan.pdf`;
 
   // takes the user back to the vacation plan form so they can generate another plan
   const startOver = () => {
     const plans = localStorage.getItem("plans");
     localStorage.clear();
     localStorage.setItem("plans", plans);
-    navigate('/planVacation');
+    navigate("/planVacation");
   }
-  
-  return (
-    <div>
-      <h1 className="title">Your Tailored Vacation Plan</h1>
-      <textarea
-        className="textarea"
-        rows="15"
-        cols="75"
-        value={plan.text}
-        readOnly={true}
-      />
-      <div className="">
-        {plan.text && plan.location &&
-          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2 mr-2">
-            <PDFDownloadLink document={<Pdf planText={plan.text} vacationLocation={plan.location}/>} fileName={pdfDownloadName}>
-              Download as PDF
-            </PDFDownloadLink>
-          </button>}
-          <button className="button is-primary is-light has-text-black is-outlined mt-3 ml-2" onClick={startOver}>Plan Another Vacation!</button>
-      </div>
-    </div>
-  )
-}
 
-
-export default function VacationPlanResults ({ plans, setPlans }) {
-  // this component renders a tab for each plan stored in the global state
-
-  const location = useLocation();
-
-  // the updatePlans function is passed down to the VacationPlanResult component so when the
-  // user makes changes to the plan in the text area in that component those changes
-  // are reflected when the user generates another plan and returns to that page
-  const updatePlans = (updatedPlan) => {
-    const updatedPlans = [...plans];
-    for (let plan of updatedPlans) {
-      if (plan.key == updatedPlan.key) {
-        plan.text = updatedPlan.text;
+  const handleSelectedPlanChange = (e) => {
+    for (let plan of plans) {
+      if (plan.key == e.target.value) {
+        setSelectedPlan({...plan});
         break;
       };
     };
-    localStorage.setItem('plans', JSON.stringify(updatedPlans));
-    setPlans(updatedPlans);
   }
   
   useEffect(() => {
-    if (plans.length < 1) {
+    if (plans?.length < 1) {
       console.log("no plans prop data")
-      const savedPlans = localStorage.getItem('plans');
+      const savedPlans = localStorage.getItem("plans");
       if (savedPlans) {
         console.log("setting vacation plans from local storage");
-        setPlans(JSON.parse(savedPlans));
+        const parsedPlans = JSON.parse(savedPlans);
+        setPlans(parsedPlans);
+        setSelectedPlan(parsedPlans[0]);
       };
-    }
+    } else {
+      setSelectedPlan(plans[0]);
+    };
   }, [])
 
   return (
     <section className="hero is-primary is-fullheight">
       <div className="hero-body">
         <div className="container my-3">
-          {/* TODO: use select dropdown and title instead of Tabs */}
-          <Tabs defaultIndex={location.state?.planTabIndex || 0}>
-            <TabList>
-              {plans.map((plan, i) => {
-                return (
-                  <Tab key={i}>Plan {i+1}: {plan.location}</Tab>
-                );
-              })}
-            </TabList>
-            {plans.map((plan, i) => {
-              return (
-                <TabPanel key={i}>{<VacationPlanResult plan={plan} updatePlans={updatePlans}/>}</TabPanel>
-              );
-            })}
-          </Tabs>
+          {plans?.length > 0 ? 
+          <>
+            <h1 className="title mb-3">Your Tailored Vacations Plans</h1>
+            <div className="select">
+              <select onChange={handleSelectedPlanChange}>
+                {plans.map((plan) => (
+                  <option key={plan.key} value={plan.key}>{plan.location}</option>
+                ))}
+              </select>
+            </div>
+            <hr className="my-3"/>
+            <textarea
+              className="textarea"
+              rows="15"
+              cols="75"
+              value={selectedPlan?.text}
+              readOnly={true}
+            />
+            {selectedPlan?.text && selectedPlan?.location &&
+            <>
+              <button className="button is-primary is-light has-text-black is-outlined mt-4 mx-2">
+                <PDFDownloadLink document={<Pdf planText={selectedPlan?.text} vacationLocation={selectedPlan?.location}/>} fileName={pdfDownloadName}>
+                  Download as PDF
+                </PDFDownloadLink>
+              </button>
+            </>}
+            <button className="button is-primary is-light has-text-black is-outlined mt-4 ml-2" onClick={startOver}>Plan Another Vacation!</button>
+          </>
+          : <p>No plans to display!</p>}
         </div>
       </div>
       <Footer />
