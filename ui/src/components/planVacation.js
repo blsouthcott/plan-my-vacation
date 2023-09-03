@@ -87,9 +87,13 @@ export default function VacationForm ({ plans, setPlans }) {
   
   const sanitizeRecText = (rec) => {
     const lineNumRegex = /^\d+\.\s*/;
-    rec = rec.replace(lineNumRegex, '').trim();
-    rec = rec.endsWith(".") && rec.slice(0, -1);
-    rec = rec.startsWith("-") && rec.slice(1);
+    rec = rec.replace(lineNumRegex, "").trim();
+    if (rec.endsWith(".")) {
+      rec = rec.slice(0, -1);
+    };
+    if (rec.startsWith("-")) {
+      rec = rec.slice(1);
+    }
     return rec.trim();
   }
   
@@ -114,7 +118,7 @@ export default function VacationForm ({ plans, setPlans }) {
 
   const handleVacationLocationChange = (e) => {
     setVacationLocation(e.target.value);
-    localStorage.setItem('vacationLocation', e.target.value);
+    localStorage.setItem("vacationLocation", e.target.value);
   }
 
   const handleCheckboxChange = (e, stateVar, setStateVar, localStorageKey) => {
@@ -136,7 +140,7 @@ export default function VacationForm ({ plans, setPlans }) {
     };
     setIsLoading(true);
     setDisplayRecs(true);
-    localStorage.setItem('displayRecs', true);
+    localStorage.setItem("displayRecs", true);
 
     // make the call to the OpenAI microservice here to get the recommendations
     const [thingsToDoResp, restaurantsResp] = await Promise.all([
@@ -150,8 +154,8 @@ export default function VacationForm ({ plans, setPlans }) {
       })
     ]);
 
-    handleRecsResp(thingsToDoResp, setThingsToDoRecs, 'thingsToDoRecs');
-    handleRecsResp(restaurantsResp, setRestaurantRecs, 'restaurantRecs');
+    handleRecsResp(thingsToDoResp, setThingsToDoRecs, "thingsToDoRecs");
+    handleRecsResp(restaurantsResp, setRestaurantRecs, "restaurantRecs");
 
     setIsLoading(false);
   }
@@ -214,7 +218,7 @@ export default function VacationForm ({ plans, setPlans }) {
       location: vacationLocation
     });
     setPlans(currPlans);
-    localStorage.setItem('plans', JSON.stringify(currPlans));
+    localStorage.setItem("plans", JSON.stringify(currPlans));
   }
   
   // makes call to microservice and then takes the user to see the vacation plan results
@@ -230,7 +234,7 @@ export default function VacationForm ({ plans, setPlans }) {
       const data = await resp.json();
       const newPlan = data.itinerary;
       updatePlans(newPlan);
-      navigate('/vacationPlanResults', {state: {planTabIndex: plans.length}});
+      navigate("/vacationPlanResults", {state: {planTabIndex: plans.length}});
     } else if (resp.status === 429) {
       const data = await resp.json();
       window.alert("You have exceeded your current request limit: " + data.message)
@@ -244,9 +248,9 @@ export default function VacationForm ({ plans, setPlans }) {
   const viewCurrentPlans = (e) => {
     e.preventDefault();
     if (plans.length < 1) {
-      window.alert('No plans have been created yet');
+      window.alert("No plans have been created yet");
     } else {
-      navigate('/vacationPlanResults');
+      navigate("/vacationPlanResults");
     };
   }
 
@@ -257,9 +261,9 @@ export default function VacationForm ({ plans, setPlans }) {
       localStorage.removeItem(obj.key);
     }
     setDisplayRecs(false);
-    setVacationLocation('');
-    setNumTravellers('');
-    setNumDays('');
+    setVacationLocation("");
+    setNumTravellers("");
+    setNumDays("");
     setThingsToDoRecs([]);
     setRestaurantRecs([]);
   }
@@ -285,42 +289,42 @@ export default function VacationForm ({ plans, setPlans }) {
             <p className="title m-4">Let's Plan Your Vacation!</p>
             <div className="box">
               <label>Where are you going?&nbsp;
-              <AiFillInfoCircle id='vacation-location-tooltip' data-tooltip-content={vacationLocationText} />
+              <AiFillInfoCircle id="vacation-location-tooltip" data-tooltip-content={vacationLocationText} />
               <Tooltip
                   style={tooltipStyle}
-                  anchorId='vacation-location-tooltip' 
-                  place='right' 
-                  delayShow='300' 
-                  delayHide='100'
+                  anchorId="vacation-location-tooltip" 
+                  place="right" 
+                  delayShow="300" 
+                  delayHide="100"
                 />
               </label>
               <div className="control">
                 <input
                   className="input mb-4"
-                  type='text'
-                  placeholder='Enter location...'
+                  type="text"
+                  placeholder="Enter location..."
                   value={vacationLocation}
                   onChange={handleVacationLocationChange} 
                 />
               </div>
               <label>How many people are you travelling with?&nbsp;
-                <AiFillInfoCircle id='num-travellers-tooltip' />
+                <AiFillInfoCircle id="num-travellers-tooltip" />
                 <Tooltip
                   style={tooltipStyle}
                   content={numTravellersText}
-                  anchorId='num-travellers-tooltip' 
-                  place='right'
-                  delayShow='300' 
-                  delayHide='100' 
+                  anchorId="num-travellers-tooltip" 
+                  place="right"
+                  delayShow="300" 
+                  delayHide="100" 
                 />
               </label>
               <div className="control">
                 <input
                   className="input mb-4"
-                  type='number'
-                  placeholder='Enter # of travellers...'
+                  type="number"
+                  placeholder="Enter # of travellers..."
                   value={numTravellers}
-                  onChange={(e) => validateNumChange(e, setNumTravellers, 'numTravellers')}
+                  onChange={(e) => validateNumChange(e, setNumTravellers, "numTravellers")}
                 />
               </div>
               <label>
@@ -329,10 +333,10 @@ export default function VacationForm ({ plans, setPlans }) {
               <div className="control">
                 <input
                   className="input mb-4"
-                  type='number'
-                  placeholder='Enter # of travel days...'
+                  type="number"
+                  placeholder="Enter # of travel days..."
                   value={numDays}
-                  onChange={(e) => validateNumChange(e, setNumDays, 'numDays')}
+                  onChange={(e) => validateNumChange(e, setNumDays, "numDays")}
                 />
               </div>
               {!displayRecs &&
@@ -345,35 +349,32 @@ export default function VacationForm ({ plans, setPlans }) {
               {displayRecs && 
               <>
                 <hr />
-                <p className="subtitle has-text-black">
+                <h2 className="subtitle has-text-black mb-2">
                   Things To Do&nbsp;
-                  <AiFillInfoCircle id='things-to-do-recs-tooltip' />
+                  <AiFillInfoCircle id="things-to-do-recs-tooltip" />
                   <Tooltip
                     style={tooltipStyle}
                     html={thingsToDoRecsTooltipText}
-                    anchorId='things-to-do-recs-tooltip' 
-                    place='right'
-                    delayShow='300'
-                    delayHide='100' 
+                    anchorId="things-to-do-recs-tooltip" 
+                    place="right"
+                    delayShow="300"
+                    delayHide="100" 
                   />
-                </p>
+                </h2>
 
                 {thingsToDoRecs.map((thing, i) => {
                   return (
-                    <>
-                      <label className="has-text">
-                        <input 
-                          className="checkbox"
-                          type='checkbox' 
-                          value={thing.key}
-                          onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, 'thingsToDoRecs')}
-                          checked={thing.checked}
-                          key={i}
-                        />
-                        {" " + thing.text}
-                      </label>
-                      <br />
-                    </>
+                    <div className="control has-text">
+                      <input 
+                        className="checkbox"
+                        type="checkbox" 
+                        value={thing.key}
+                        onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
+                        checked={thing.checked}
+                        key={i}
+                      />
+                      {" " + thing.text}
+                    </div>
                 )})}
                 <button 
                   onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
@@ -383,35 +384,32 @@ export default function VacationForm ({ plans, setPlans }) {
                 
                 <hr />
 
-                <p className="subtitle has-text-black">
+                <h2 className="subtitle has-text-black mb-2">
                   Restaurants&nbsp;
-                  <AiFillInfoCircle id='restaurant-recs-tooltip' />
+                  <AiFillInfoCircle id="restaurant-recs-tooltip" />
                   <Tooltip
                     style={tooltipStyle}
                     html={restaurantRecsTooltipText}
-                    anchorId='restaurant-recs-tooltip' 
-                    place='right'
-                    delayShow='300'
-                    delayHide='100' 
+                    anchorId="restaurant-recs-tooltip" 
+                    place="right"
+                    delayShow="300"
+                    delayHide="100" 
                   />&nbsp;
-                </p>
+                </h2>
 
                 {restaurantRecs.map((restaurant, i) => {
                   return (
-                    <>
-                      <label className="has-text-black">
-                        <input
-                          className="checkbox"
-                          type='checkbox'
-                          value={restaurant.key} 
-                          onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, 'restaurantRecs')}
-                          checked={restaurant.checked}
-                          key={i}
-                        />
-                        {" " + restaurant.text}
-                      </label>
-                      <br />
-                    </>
+                    <div className="control has-text">
+                      <input
+                        className="checkbox"
+                        type="checkbox"
+                        value={restaurant.key} 
+                        onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, "restaurantRecs")}
+                        checked={restaurant.checked}
+                        key={i}
+                      />
+                      {" " + restaurant.text}
+                    </div>
                 )})}
                 <button 
                   onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}
