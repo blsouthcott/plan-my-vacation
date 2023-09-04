@@ -5,59 +5,52 @@ import { AiFillInfoCircle } from 'react-icons/ai';
 import { Tooltip } from 'react-tooltip';
 import { tooltipStyle } from './tooltipStyle';
 import Footer from './footer';
+import * as tooltipText from "./tooltipText";
 
 
 export default function VacationForm ({ plans, setPlans }) {
   const navigate = useNavigate();
 
+  const initialForm = {
+    vacationLocation: "",
+    numTravelers: 0,
+    numDays: 0,
+    thingsToDoRecs: [],
+    restaurantRecs: [],
+    displayRecs: false,
+  }
+
   const [isLoading, setIsLoading] = useState(false);
-  const [vacationLocation, setVacationLocation] = useState('');
-  const [numTravellers, setNumTravellers] = useState('');
-  const [numDays, setNumDays] = useState('');
-  const [thingsToDoRecs, setThingsToDoRecs] = useState([]);
-  const [restaurantRecs, setRestaurantRecs] = useState([]);
-  const [displayRecs, setDisplayRecs] = useState(false);
+  const [form, setForm] = useState({
+    ...initialForm,
+  });
 
-  // tooltip text
-  const vacationLocationText = 'We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!'
-  const numTravellersText = 'Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!'
-  const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or to see more recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
-  const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
-  const startOverTooltipText = 'If you choose to Start Over, all the information you\'ve entered so far will be lost, including your recommendations and selections.'
-
-  // the keys and functions we'll use to display the data the user input on page reloads
-  const localStorageObjs = [
-    {
-      key: "vacationLocation",
-      setStateVarFn: setVacationLocation,
-      parseJSON: false,
-    },
-    {
-      key: "numTravellers",
-      setStateVarFn: setNumTravellers,
-      parseJSON: false,
-    },
-    {
-      key: "displayRecs",
-      setStateVarFn: setDisplayRecs,
-      parseJSON: false,
-    },
-    {
-      key: "thingsToDoRecs",
-      setStateVarFn: setThingsToDoRecs,
-      parseJSON: true,
-    },
-    {
-      key: "restaurantRecs",
-      setStateVarFn: setRestaurantRecs,
-      parseJSON: true,
-    },
-    {
-      key: "numDays",
-      setStateVarFn: setNumDays,
-      parseJSON: false
-    },
-  ]
+  const handleFormChange = (e) => {
+    let updatedForm;
+    if (["thingsToDoRecs", "restaurantRecs"].includes(e.target.name)) {
+      const recs = [...form[e.target.name]];
+      for (let rec of recs) {
+        if (rec.key == e.target.value) {
+          rec.checked = e.target.checked;
+        };
+      };
+      updatedForm = {
+        ...form,
+        [e.target.name]: recs,
+      };
+    } else {;
+      updatedForm = {
+        ...form,
+        [e.target.name]: e.target.value,
+      };
+    };
+    setForm({
+      ...updatedForm,
+    });
+    localStorage.setItem("form", JSON.stringify({
+      ...updatedForm,
+    }))
+  }
 
   const fetchRecs = async (body) => {
     return await fetch("/api/recommendations", {
@@ -69,20 +62,19 @@ export default function VacationForm ({ plans, setPlans }) {
     });
   }
   
-  // updates the state after making the request to the microservice to get recommendations
-  const handleRecsResp = async (resp, setStateVarFn, localStorageKey) => {
+  const handleRecsResp = async (resp) => {
     if (resp.status === 200) {
       const data = await resp.json();
       let recs = data.recs;
       recs = recsArrayToObjs(recs);
-      setStateVarFn(recs);
-      localStorage.setItem(localStorageKey, JSON.stringify(recs));
+      return recs;
     } else if (resp.status === 429) {
       const data = await resp.json();
       window.alert("You have exceeded your current request limit: " + data.message)
     } else {
-      window.alert("Unable to load data for " + localStorageKey);
-    }
+      window.alert("Unable to load recommendations");
+    };
+    return [];
   }
   
   const sanitizeRecText = (rec) => {
@@ -111,82 +103,72 @@ export default function VacationForm ({ plans, setPlans }) {
     return recObjs;
   }
 
-  const validateNumChange = (e, setVarFn, localStorageKey) => {
-    e.target.value >= 1 && setVarFn(e.target.value);
-    e.target.value >= 1 && localStorage.setItem(localStorageKey, e.target.value);
-  }
-
-  const handleVacationLocationChange = (e) => {
-    setVacationLocation(e.target.value);
-    localStorage.setItem("vacationLocation", e.target.value);
-  }
-
-  const handleCheckboxChange = (e, stateVar, setStateVar, localStorageKey) => {
-    const recs = [...stateVar];
-    for (let rec of recs) {
-      if (rec.key == e.target.value) {
-        rec.checked = e.target.checked;
-      };
-    }
-    setStateVar(recs);
-    localStorage.setItem(localStorageKey, JSON.stringify(recs));
-  }
-
-  const getRecs = async (e) => {
-    e.preventDefault();
-    if (!vacationLocation || numDays < 1) {
-      window.alert("You must provide a vacation location and number of travel days");
+  const getRecs = async () => {
+    if (!form.vacationLocation || form.numDays < 1) {
+      window.alert("Please provide a vacation location and number of travel days greater than 1 before requesting recommendations");
       return;
     };
     setIsLoading(true);
-    setDisplayRecs(true);
-    localStorage.setItem("displayRecs", true);
-
-    // make the call to the OpenAI microservice here to get the recommendations
     const [thingsToDoResp, restaurantsResp] = await Promise.all([
       fetchRecs({
-        location: vacationLocation,
+        location: form.vacationLocation,
         rec_type: "thingsToDo"
       }),
       fetchRecs({
-        location: vacationLocation,
+        location: form.vacationLocation,
         rec_type: "restaurants"
       })
     ]);
-
-    handleRecsResp(thingsToDoResp, setThingsToDoRecs, "thingsToDoRecs");
-    handleRecsResp(restaurantsResp, setRestaurantRecs, "restaurantRecs");
-
+    const thingsToDoRecs = await handleRecsResp(thingsToDoResp);
+    const restaurantRecs = await handleRecsResp(restaurantsResp);
+    const updatedForm = {
+      ...form,
+      thingsToDoRecs: thingsToDoRecs,
+      restaurantRecs: restaurantRecs,
+      displayRecs: true,
+    };
+    setForm({
+      ...updatedForm,
+    });
+    localStorage.setItem("form", JSON.stringify({
+      ...updatedForm,
+    }))
     setIsLoading(false);
   }
 
-  const getMoreRecs = async (e, recsType, recsStateVar, setRecsStateVarFn, localStorageKey) => {
-    e.preventDefault();
+  const getMoreRecs = async (recsName) => {
     setIsLoading(true);
     const resp = await fetchRecs({
-      location: vacationLocation,
-      rec_type: recsType,
-      exclusions: recsStateVar.map(rec => rec.text)
+      location: form.vacationLocation,
+      rec_type: recsName === "thingsToDoRecs" ? "thingsToDo" : "restaurants",
+      exclusions: form[recsName].map(rec => rec.text)
     });
     if (resp.status === 200) {
       const data = await resp.json();
-      const moreRecs = data.recs;
-      const recs = [...recsStateVar];
-      let numRecs = recs.length;
-      for (let newRec of moreRecs) {
-        newRec = sanitizeRecText(newRec);
-        const dupRecs = recs.filter(rec => rec.text === newRec);
+      const currRecs = [...form[recsName]];
+      let numRecs = currRecs.length;
+      for (let rec of data.recs) {
+        rec = sanitizeRecText(rec);
+        const dupRecs = currRecs.filter(currRec => currRec.text === rec);
         if (dupRecs.length === 0) {
           numRecs += 1;
-          recs.push({
+          currRecs.push({
             key: numRecs,
-            text: sanitizeRecText(newRec),
+            text: rec,
             checked: false
           });
         };
       };
-      setRecsStateVarFn(recs);
-      localStorage.setItem(localStorageKey, JSON.stringify(recs));
+      const updatedForm = {
+        ...form,
+        [recsName]: currRecs,
+      }
+      setForm({
+        ...updatedForm,
+      });
+      localStorage.setItem("form", JSON.stringify({
+        ...updatedForm,
+      }));
     } else if (resp.status === 429) {
       const data = await resp.json();
       window.alert("You have exceeded your current request limit: " + data.message)
@@ -204,37 +186,34 @@ export default function VacationForm ({ plans, setPlans }) {
       headers: {
         "Content-Type": "application/json",
       }
-    })
+    });
     return resp;
   }
 
-  // updates the plans in the global state so users can refer to previously generated plans
   const updatePlans = (newPlan) => {
     const currPlans = [...plans];
     let numPlans = currPlans.length;
     currPlans.push({
       key: numPlans+1,
       text: newPlan, 
-      location: vacationLocation
+      location: form.vacationLocation
     });
     setPlans(currPlans);
     localStorage.setItem("plans", JSON.stringify(currPlans));
   }
   
-  // makes call to microservice and then takes the user to see the vacation plan results
-  const getAndViewPlan = async (e) => {
-    e.preventDefault();
+  const getAndViewPlan = async () => {
     setIsLoading(true);
     const resp = await fetchVacationPlan({
-      things_to_do: thingsToDoRecs.filter(item => item.checked === true).map(item => item.text),
-      restaurants: restaurantRecs.filter(item => item.checked === true).map(item => item.text),
-      num_days: numDays
+      things_to_do: form.thingsToDoRecs.filter(item => item.checked === true).map(item => item.text),
+      restaurants: form.restaurantRecs.filter(item => item.checked === true).map(item => item.text),
+      num_days: form.numDays
     });
     if (resp.status === 200) {
       const data = await resp.json();
       const newPlan = data.itinerary;
       updatePlans(newPlan);
-      navigate("/vacationPlanResults", {state: {planTabIndex: plans.length}});
+      navigate("/vacation-plan-results", {state: {planTabIndex: plans.length}});
     } else if (resp.status === 429) {
       const data = await resp.json();
       window.alert("You have exceeded your current request limit: " + data.message)
@@ -245,38 +224,27 @@ export default function VacationForm ({ plans, setPlans }) {
     setIsLoading(false);
   }
 
-  const viewCurrentPlans = (e) => {
-    e.preventDefault();
+  const viewCurrentPlans = () => {
     if (plans.length < 1) {
       window.alert("No plans have been created yet");
     } else {
-      navigate("/vacationPlanResults");
+      navigate("/vacation-plan-results");
     };
   }
 
-  // clears the data in the form but leaves the plans in the global state unchanged
-  const startOver = (e) => {
-    e.preventDefault();
-    for (let obj of localStorageObjs) {
-      localStorage.removeItem(obj.key);
-    }
-    setDisplayRecs(false);
-    setVacationLocation("");
-    setNumTravellers("");
-    setNumDays("");
-    setThingsToDoRecs([]);
-    setRestaurantRecs([]);
+  const startOver = () => {
+    localStorage.removeItem("form");
+    setForm({
+      ...initialForm,
+    });
   }
 
   useEffect(() => {
-    for (let obj of localStorageObjs) {
-      let saved = localStorage.getItem(obj.key);
-      if (saved) {
-        if (obj.parseJSON) {
-          saved = JSON.parse(saved);
-        }
-        obj.setStateVarFn(saved);
-      };
+    const savedForm = JSON.parse(localStorage.getItem("form"));
+    if (savedForm) {
+      setForm({
+        ...savedForm,
+      });
     };
   }, [])
 
@@ -289,7 +257,7 @@ export default function VacationForm ({ plans, setPlans }) {
             <p className="title m-4">Let's Plan Your Vacation!</p>
             <div className="box">
               <label>Where are you going?&nbsp;
-              <AiFillInfoCircle id="vacation-location-tooltip" data-tooltip-content={vacationLocationText} />
+              <AiFillInfoCircle id="vacation-location-tooltip" data-tooltip-content={tooltipText.vacationLocationText} />
               <Tooltip
                   style={tooltipStyle}
                   anchorId="vacation-location-tooltip" 
@@ -302,16 +270,17 @@ export default function VacationForm ({ plans, setPlans }) {
                 <input
                   className="input mb-4"
                   type="text"
+                  name="vacationLocation"
                   placeholder="Enter location..."
-                  value={vacationLocation}
-                  onChange={handleVacationLocationChange} 
+                  value={form.vacationLocation}
+                  onChange={handleFormChange} 
                 />
               </div>
               <label>How many people are you travelling with?&nbsp;
                 <AiFillInfoCircle id="num-travellers-tooltip" />
                 <Tooltip
                   style={tooltipStyle}
-                  content={numTravellersText}
+                  content={tooltipText.numTravellersText}
                   anchorId="num-travellers-tooltip" 
                   place="right"
                   delayShow="300" 
@@ -322,9 +291,10 @@ export default function VacationForm ({ plans, setPlans }) {
                 <input
                   className="input mb-4"
                   type="number"
-                  placeholder="Enter # of travellers..."
-                  value={numTravellers}
-                  onChange={(e) => validateNumChange(e, setNumTravellers, "numTravellers")}
+                  name="numTravelers"
+                  placeholder="Enter # of travelers..."
+                  value={form.numTravelers}
+                  onChange={handleFormChange}
                 />
               </div>
               <label>
@@ -334,19 +304,20 @@ export default function VacationForm ({ plans, setPlans }) {
                 <input
                   className="input mb-4"
                   type="number"
+                  name="numDays"
                   placeholder="Enter # of travel days..."
-                  value={numDays}
-                  onChange={(e) => validateNumChange(e, setNumDays, "numDays")}
+                  value={form.numDays}
+                  onChange={handleFormChange}
                 />
               </div>
-              {!displayRecs &&
+              {!form.displayRecs &&
               <>
                 <button className="button is-primary is-light has-text-black is-outlined mt-4" onClick={getRecs}>
                   Get Recommendations!
                 </button>
               </>}
               
-              {displayRecs && 
+              {form.displayRecs && 
               <>
                 <hr />
                 <h2 className="subtitle has-text-black mb-2">
@@ -354,7 +325,7 @@ export default function VacationForm ({ plans, setPlans }) {
                   <AiFillInfoCircle id="things-to-do-recs-tooltip" />
                   <Tooltip
                     style={tooltipStyle}
-                    html={thingsToDoRecsTooltipText}
+                    html={tooltipText.thingsToDoRecsTooltipText}
                     anchorId="things-to-do-recs-tooltip" 
                     place="right"
                     delayShow="300"
@@ -362,22 +333,22 @@ export default function VacationForm ({ plans, setPlans }) {
                   />
                 </h2>
 
-                {thingsToDoRecs.map((thing, i) => {
+                {form.thingsToDoRecs.map(thing => {
                   return (
-                    <div className="control has-text">
+                    <div className="control has-text" key={thing.key}>
                       <input 
                         className="checkbox"
-                        type="checkbox" 
+                        type="checkbox"
+                        name="thingsToDoRecs"
                         value={thing.key}
-                        onChange={e => handleCheckboxChange(e, thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
+                        onChange={handleFormChange}
                         checked={thing.checked}
-                        key={i}
                       />
                       {" " + thing.text}
                     </div>
                 )})}
                 <button 
-                  onClick={(e) => getMoreRecs(e, "thingsToDo", thingsToDoRecs, setThingsToDoRecs, "thingsToDoRecs")}
+                  onClick={() => getMoreRecs("thingsToDoRecs")}
                   className="button is-primary is-light has-text-black is-outlined mt-4">
                   Get more recommendations!
                 </button>
@@ -389,7 +360,7 @@ export default function VacationForm ({ plans, setPlans }) {
                   <AiFillInfoCircle id="restaurant-recs-tooltip" />
                   <Tooltip
                     style={tooltipStyle}
-                    html={restaurantRecsTooltipText}
+                    html={tooltipText.restaurantRecsTooltipText}
                     anchorId="restaurant-recs-tooltip" 
                     place="right"
                     delayShow="300"
@@ -397,22 +368,22 @@ export default function VacationForm ({ plans, setPlans }) {
                   />&nbsp;
                 </h2>
 
-                {restaurantRecs.map((restaurant, i) => {
+                {form.restaurantRecs.map(restaurant => {
                   return (
-                    <div className="control has-text">
+                    <div className="control has-text" key={restaurant.key}>
                       <input
                         className="checkbox"
                         type="checkbox"
+                        name="restaurantRecs"
                         value={restaurant.key} 
-                        onChange={e => handleCheckboxChange(e, restaurantRecs, setRestaurantRecs, "restaurantRecs")}
+                        onChange={handleFormChange}
                         checked={restaurant.checked}
-                        key={i}
                       />
                       {" " + restaurant.text}
                     </div>
                 )})}
                 <button 
-                  onClick={(e) => getMoreRecs(e, "restaurants", restaurantRecs, setRestaurantRecs, "restaurantRecs")}
+                  onClick={() => getMoreRecs("restaurantRecs")}
                   className="button is-primary is-light has-text-black is-outlined mt-4">
                   Get more recommendations!
                 </button>
@@ -420,7 +391,7 @@ export default function VacationForm ({ plans, setPlans }) {
                 <hr />
                   
                 <div className="is-flex is-align-content-left is-align-content-space-between is-flex-wrap-wrap">
-                  <button className="button is-full-mobile is-primary is-light has-text-black is-outlined" onClick={getAndViewPlan}>
+                  <button className="button is-primary is-light has-text-black is-outlined" onClick={getAndViewPlan}>
                     Get Vacation Plan!
                   </button>
                   <button className="button mx-2 is-full-mobile is-primary is-light has-text-black is-outlined" onClick={viewCurrentPlans}>
@@ -429,15 +400,6 @@ export default function VacationForm ({ plans, setPlans }) {
                   <button className="button is-full-mobile is-primary is-light has-text-black is-outlined" onClick={startOver}>
                     Start Over
                   </button>
-                  {/* <AiFillInfoCircle id='start-over-tooltip' />
-                  <Tooltip
-                    style={tooltipStyle}
-                    html={startOverTooltipText}
-                    anchorId='start-over-tooltip' 
-                    place='right'
-                    delayShow='300'
-                    delayHide='100' 
-                  /> */}
                 </div>
               </>}
             </div>

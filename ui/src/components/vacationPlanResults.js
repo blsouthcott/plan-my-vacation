@@ -17,7 +17,7 @@ export default function VacationPlanResults ({ plans, setPlans }) {
     const plans = localStorage.getItem("plans");
     localStorage.clear();
     localStorage.setItem("plans", plans);
-    navigate("/planVacation");
+    navigate("/plan-vacation");
   }
 
   const handleSelectedPlanChange = (e) => {
@@ -30,8 +30,8 @@ export default function VacationPlanResults ({ plans, setPlans }) {
   }
   
   useEffect(() => {
-    if (plans?.length < 1) {
-      console.log("no plans prop data")
+    if (plans.length === 0) {
+      console.log("no plans")
       const savedPlans = localStorage.getItem("plans");
       if (savedPlans) {
         console.log("setting vacation plans from local storage");
@@ -40,7 +40,8 @@ export default function VacationPlanResults ({ plans, setPlans }) {
         setSelectedPlan(parsedPlans[0]);
       };
     } else {
-      setSelectedPlan(plans[0]);
+      console.log("using plans prop data");
+      setSelectedPlan({...plans.at(-1)});
     };
   }, [])
 
@@ -52,9 +53,9 @@ export default function VacationPlanResults ({ plans, setPlans }) {
           <>
             <h1 className="title mb-3">Your Tailored Vacations Plans</h1>
             <div className="select">
-              <select onChange={handleSelectedPlanChange}>
-                {plans.map((plan) => (
-                  <option key={plan.key} value={plan.key}>{plan.location}</option>
+              <select onChange={handleSelectedPlanChange} value={selectedPlan?.key}>
+                {plans.map((plan, i) => (
+                  <option key={plan.key} value={plan.key}>{i+1} - {plan.location}</option>
                 ))}
               </select>
             </div>
