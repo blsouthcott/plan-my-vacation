@@ -25,8 +25,8 @@ export default function App() {
         <Routes>
           <Route path="/" exact element={<WelcomePage />} />
           <Route path="/about" element={<About />} />
-          <Route path="/planVacation" element={<PlanVacation plans={ plans } setPlans={ setPlans } />} />
-          <Route path="/vacationPlanResults" element={<VacationPlanResults plans={ plans } setPlans={ setPlans }/>} />
+          <Route path="/plan-vacation" element={<PlanVacation plans={ plans } setPlans={ setPlans } />} />
+          <Route path="/vacation-plan-results" element={<VacationPlanResults plans={ plans } setPlans={ setPlans }/>} />
         </Routes>
       </Router>
     </>
