@@ -46,12 +46,12 @@ export default function Navbar({ plans }) {
               About
             </Link>
 
-            <Link className="navbar-item" to="/planVacation">
+            <Link className="navbar-item" to="/plan-vacation">
               Plan Vacation
             </Link>
 
             {plans.length > 0 &&
-              <Link className="navbar-item" to="/vacationPlanResults">
+              <Link className="navbar-item" to="/vacation-plan-results">
                 View Current Plans
               </Link>}
           </div>

@@ -18,7 +18,7 @@ export default function About () {
                 <p>Plan Your Vacation is an <strong>AI Assisted</strong><AiFillInfoCircle id='ai-tooltip' data-tooltip-content={tooltipText} /> tool where you can plan your dream vacation!</p> 
                 <p>All you have to do is tell us where you're going and how many days you'll be travelling!</p> 
                 <p>Based on the information you provide, we'll give you recommendations of things to do and places to eat -- then craft a vacation plan tailored to you based on your choices!</p>
-                <p>To get started, click <Link className="has-text-link" to="/planVacation">here</Link>!</p>
+                <p>To get started, click <Link className="has-text-link" to="/plan-vacation">here</Link>!</p>
                 <Tooltip 
                 style={tooltipStyle}
                 anchorId='ai-tooltip' 

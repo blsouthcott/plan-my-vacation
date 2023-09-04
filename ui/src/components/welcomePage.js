@@ -8,7 +8,7 @@ export default function WelcomePage () {
       <div className="hero-body">
         <div className="container">
           <div className="is-flex is-justify-content-center">
-            <h1 className="title">Welcome to Plan Your Vacation!</h1>
+            <h1 className="title">Welcome to Plan My Vacation!</h1>
           </div>
           <div className="is-flex is-justify-content-center my-3">
             <div className="card">
@@ -18,7 +18,7 @@ export default function WelcomePage () {
                     For information about how to use this application, click <Link className="has-text-link" to="/about">here</Link>!
                   </p>
                   <p>
-                    Otherwise, to continue and start planning your vacation, click <Link className="has-text-link" to="/planVacation">here</Link>!
+                    Otherwise, to continue and start planning your vacation, click <Link className="has-text-link" to="/plan-vacation">here</Link>!
                   </p>
                 </div>
               </div>
