@@ -1,4 +1,4 @@
-export const vacationLocationText = 'We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!'
-export const numTravelersText = 'Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!'
-export const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or to see more recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
-export const restaurantRecsTooltipText = '<p>Choose from the following restaurants or to see more restaurant recommendations click "Get more recommendations"</p><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
+export const vacationLocationText = '<p>We can provide recommendations specific to cities or general areas, so you don\'t have to be specific if you don\'t know exactly where you\'ll be going!</p>'
+export const numTravelersText = '<p>Telling us how many travellers you\'ll be travelling with helps us provide recommendations and ultimately craft a plan most tailored to you!</p>'
+export const thingsToDoRecsTooltipText = '<p>Choose from the following recommendations or click "Get more recommendations" to see more recommendations</p><br /><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'
+export const restaurantRecsTooltipText = '<p>Choose from the following restaurants or click "Get more recommendations" to see more restaurant recommendations</p><br /><p>We\'ll use your choices to create a vacation plan tailored to you!</p>'

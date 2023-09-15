@@ -11,10 +11,11 @@ const tooltipStyle = {
 
 const InfoTooltip = ({ id, text }) => (
   <>
-    <AiFillInfoCircle id={id} data-tooltip-content={text} />
+    <AiFillInfoCircle id={id} />
     <Tooltip
         style={tooltipStyle}
         anchorId={id}
+        html={text}
         place="right" 
         delayShow="300" 
         delayHide="100"/>
