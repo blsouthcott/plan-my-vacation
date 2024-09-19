@@ -6,6 +6,21 @@ import * as tooltipText from "./tooltipText";
 import InfoTooltip from './tooltip';
 import { loadRecs, loadItinerary } from "./api";
 
+const recType = {
+  thingsToDo: "thingsToDo",
+  restaurants: "restaurants",
+}
+
+
+const initialForm = {
+  vacationLocation: "",
+  numTravelers: 0,
+  numDays: 0,
+  [recType.thingsToDo]: [],
+  [recType.restaurants]: [],
+  displayRecs: false,
+};
+
 
 const Input = ({ className, type, name, placeholder, value, onChange }) => (
   <div className="control">
@@ -34,6 +49,13 @@ const Checkbox = ({ rec, name, onChange }) => (
   </div>
 )
 
+const SelectAllCheckbox= ({ name, handleSelectAll, formData }) => (
+  <div className="control my-2">
+    <input type="checkbox" name={name} onClick={handleSelectAll} checked={formData[name].every(rec => rec.checked)}/>
+    &nbsp;<i><b>Select All</b></i>
+  </div>
+)
+
 const Button = ({ text, margin, onClick }) => (
   <button 
     className={`button is-primary is-light has-text-black is-outlined ${margin}`}
@@ -49,71 +71,95 @@ const Subtitle = ({ content }) => (
 )
 
 
+const selectAllRecs = (e, form, setForm) => {
+  const recs = [...form[e.target.name]];
+  for (let rec of recs) {
+    rec.checked = e.target.checked;
+  };
+  const updatedForm = {
+    ...form,
+    [e.target.name]: recs    
+  };
+  setForm(updatedForm)
+  localStorage.setItem("form", JSON.stringify(updatedForm));
+}
+
+
+const updateForm = (e, form, setForm) => {
+  let updatedForm;
+  if (e.target.name === "numDays" || e.target.name === "numTravelers") {
+    const num = parseInt(e.target.value);
+    if (e.target.value !== "" && isNaN(num) || num < 0) {
+      return;
+    };
+  };
+  if (e.target.name === recType.thingsToDo || e.target.name === recType.restaurants) {
+    const recs = [...form[e.target.name]];
+    for (let rec of recs) {
+      if (rec.key == e.target.value) {
+        rec.checked = e.target.checked;
+      };
+    };
+    updatedForm = {
+      ...form,
+      [e.target.name]: recs,
+    };
+  } else {;
+    updatedForm = {
+      ...form,
+      [e.target.name]: e.target.value,
+    };
+  };
+  setForm(updatedForm)
+  localStorage.setItem("form", JSON.stringify(updatedForm));
+}
+
+
+const clearForm = (setForm) => {
+  localStorage.removeItem("form");
+  setForm({
+    ...initialForm,
+  });
+}
+
+
+const loadSavedForm = (setForm) => {
+  const savedForm = JSON.parse(localStorage.getItem("form"));
+  if (savedForm) {
+    setForm({
+      ...savedForm,
+    });
+  };
+}
+
+
+const navigateToCurrentPlans = (navigate, plans) => {
+  if (plans.length < 1) {
+    window.alert("No plans have been created yet");
+  } else {
+    navigate("/vacation-plan-results");
+  };
+}
+
+
 function Form ({ plans, setPlans, setIsLoading }) {
   const navigate = useNavigate();
-
-  const initialForm = {
-    vacationLocation: "",
-    numTravelers: 0,
-    numDays: 0,
-    thingsToDoRecs: [],
-    restaurantRecs: [],
-    displayRecs: false,
-  };
 
   const [form, setForm] = useState({
     ...initialForm,
   });
 
-  const handleFormChange = (e) => {
-    let updatedForm;
-    if (["thingsToDoRecs", "restaurantRecs"].includes(e.target.name)) {
-      const recs = [...form[e.target.name]];
-      for (let rec of recs) {
-        if (rec.key == e.target.value) {
-          rec.checked = e.target.checked;
-        };
-      };
-      updatedForm = {
-        ...form,
-        [e.target.name]: recs,
-      };
-    } else {;
-      updatedForm = {
-        ...form,
-        [e.target.name]: e.target.value,
-      };
-    };
-    setForm({
-      ...updatedForm,
-    });
-    localStorage.setItem("form", JSON.stringify({
-      ...updatedForm,
-    }))
-  }
-
-  const startOver = () => {
-    localStorage.removeItem("form");
-    setForm({
-      ...initialForm,
-    });
-  }
-
-  const viewCurrentPlans = () => {
-    if (plans.length < 1) {
-      window.alert("No plans have been created yet");
-    } else {
-      navigate("/vacation-plan-results");
-    };
-  }
-
+  const handleFormChange = (e) => updateForm(e, form, setForm);
+  const handleLoadItinerary = () => loadItinerary(form, plans, setPlans, navigate, setIsLoading);
+  const handleSelectAll = (e) => selectAllRecs(e, form, setForm);
+  const handleLoadInitialRecs = () => loadRecs(form, setForm, setIsLoading, [recType.thingsToDo, recType.restaurants]);
+  const handleLoadMoreThingsToDoRecs = () => loadRecs(form, setForm, setIsLoading, [recType.thingsToDo]);
+  const handleLoadMoreRestaurantRecs = () => loadRecs(form, setForm, setIsLoading, [recType.restaurants]);
+  const startOver = () => clearForm(setForm);
+  const viewCurrentPlans = () => navigateToCurrentPlans(navigate, plans);
+  
   useEffect(() => {
-    const savedForm = JSON.parse(localStorage.getItem("form"));
-    if (savedForm) {
-      setForm({
-        ...savedForm,
-      });
-    };
+    loadSavedForm(setForm);
   }, [])
 
   return (
@@ -153,7 +199,7 @@ function Form ({ plans, setPlans, setIsLoading }) {
         value={form.numDays}
         onChange={handleFormChange}
       />
-      {!form.displayRecs && <Button margin="mt-4" text="Get Recommendations!" onClick={() => loadRecs(form, setForm, setIsLoading, ["thingsToDoRecs", "restaurantRecs"])}/>}
+      {!form.displayRecs && <Button margin="mt-4" text="Get Recommendations!" onClick={handleLoadInitialRecs}/>}
       {form.displayRecs && 
       <>
         <hr />
@@ -163,15 +209,16 @@ function Form ({ plans, setPlans, setIsLoading }) {
             <InfoTooltip id="things-to-do-recs-tooltip" text={tooltipText.thingsToDoRecsTooltipText} />
           </>
         } />
-        {form.thingsToDoRecs.map(thing => {
+        <SelectAllCheckbox name={recType.thingsToDo} handleSelectAll={handleSelectAll} formData={form} />
+        {form.thingsToDo.map(thing => {
           return (
             <Checkbox
               rec={thing}
-              name="thingsToDoRecs"
+              name={recType.thingsToDo}
               onChange={handleFormChange}
             />
         )})}
-        <Button text="Get more recommendations!" margin="mt-4" onClick={() => loadRecs(form, setForm, setIsLoading, ["thingsToDoRecs"])} />
+        <Button text="Get more recommendations!" margin="mt-4" onClick={handleLoadMoreThingsToDoRecs} />
         <hr />
         <Subtitle content={
           <>
@@ -179,18 +226,19 @@ function Form ({ plans, setPlans, setIsLoading }) {
             <InfoTooltip id="restaurant-recs-tooltip" text={tooltipText.restaurantRecsTooltipText} />&nbsp;
           </>
         } />
-        {form.restaurantRecs.map(restaurant => {
+        <SelectAllCheckbox name={recType.restaurants} handleSelectAll={handleSelectAll} formData={form}/>
+        {form.restaurants.map(restaurant => {
           return (
             <Checkbox
               rec={restaurant}
-              name="restaurantRecs"
+              name={recType.restaurants}
               onChange={handleFormChange}
             />
         )})}
-        <Button text="Get more recommendations!" margin="mt-4" onClick={() => loadRecs(form, setForm, setIsLoading, ["restaurantRecs"])} />
+        <Button text="Get more recommendations!" margin="mt-4" onClick={handleLoadMoreRestaurantRecs} />
         <hr />
         <div className="is-flex is-align-content-left is-align-content-space-between is-flex-wrap-wrap">
-          <Button text="Get Vacation Plan!" onClick={() => loadItinerary(form, plans, setPlans, navigate, setIsLoading)} />
+          <Button text="Get Vacation Plan!" onClick={handleLoadItinerary} />
           <Button text="View Current Plans" margin="mx-2" onClick={viewCurrentPlans} />
           <Button text="Start Over" onClick={startOver} />
         </div>

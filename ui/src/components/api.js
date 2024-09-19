@@ -29,6 +29,7 @@ const fetchRecs = async (body) => {
 }
 
 export const loadRecs = async (form, setForm, setIsLoading, recsNames) => {
+  console.log("form: ", form);
   if (!form.vacationLocation || form.numDays < 1) {
     window.alert("Please provide a vacation location and number of travel days greater than 1 before requesting recommendations");
     return;
@@ -38,7 +39,7 @@ export const loadRecs = async (form, setForm, setIsLoading, recsNames) => {
     recsNames.map(recName => (
       fetchRecs({
         location: form.vacationLocation,
-        rec_type: recName === "thingsToDoRecs" ? "thingsToDo" : "restaurants",
+        rec_type: recName,
         exclusions: form[recName].map(rec => rec.text)
       })
     ))
@@ -79,8 +80,8 @@ export const loadItinerary = async (form, plans, setPlans, navigate, setIsLoadin
   const resp = await fetch("/api/itinerary", {
     method: "POST",
     body: JSON.stringify({
-      things_to_do: form.thingsToDoRecs.filter(item => item.checked === true).map(item => item.text),
-      restaurants: form.restaurantRecs.filter(item => item.checked === true).map(item => item.text),
+      things_to_do: form.thingsToDo.filter(item => item.checked === true).map(item => item.text),
+      restaurants: form.restaurants.filter(item => item.checked === true).map(item => item.text),
       num_days: form.numDays
     }),
     headers: {
